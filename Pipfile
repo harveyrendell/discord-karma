@@ -1,0 +1,7 @@
+[dev-packages]
+pytest = "*"
+pycodestyle = "*"
+
+[packages]
+"discord.py" = "*"
+pydblite = "*"
