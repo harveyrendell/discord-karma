@@ -4,4 +4,4 @@ pycodestyle = "*"
 
 [packages]
 "discord.py" = "*"
-pydblite = "*"
+sqlalchemy = "*"
