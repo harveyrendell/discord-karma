@@ -1,7 +1,10 @@
 [dev-packages]
+pylint = "*"
 pytest = "*"
-pycodestyle = "*"
 
 [packages]
 "discord.py" = "*"
 sqlalchemy = "*"
+
+[requires]
+python_version = "3.6"

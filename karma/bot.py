@@ -1,12 +1,10 @@
-import discord
-import asyncio
-
 import argparse
+import asyncio
+import platform
 import re
 
+import discord
 from discord.ext import commands
-import platform
-from pydblite.pydblite import Base
 
 import database as db
 
@@ -30,7 +28,7 @@ async def on_ready():
 async def on_message(message):
     await client.process_commands(message)  # check if command has been called
 
-    pattern = re.compile('<@!?(?P<user_id>\d+)>\s?(?P<mod>[\+-]{2,})')
+    pattern = re.compile(r'<@!?(?P<user_id>\d+)>\s?(?P<mod>[\+-]{2,})')
     match = pattern.search(message.content)
 
     if match:
@@ -58,9 +56,9 @@ async def ping():
 
 
 @client.command(help='get karma for specified user')
-async def get(user : str):
+async def get(user: str):
     print('called getkarma with %s' % user)
-    pattern = re.compile('<@!?(?P<user_id>\d+)>')
+    pattern = re.compile(r'<@!?(?P<user_id>\d+)>')
     match = pattern.search(user)
     if match:
         entry = db.get_karma(match.group('user_id'))
@@ -84,8 +82,12 @@ async def all(ctx):
     await client.say(response)
 
 
-parser = argparse.ArgumentParser()
-parser.add_argument('-t', '--token', required=True, type=str)
-args = parser.parse_args()
+def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument('-t', '--token', required=True, type=str)
+    args = parser.parse_args()
+    client.run(args.token)
 
-client.run(args.token)
+
+if __name__ == "__main__":
+    main()
