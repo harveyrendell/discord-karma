@@ -1,14 +1,26 @@
 import argparse
 import asyncio
+import logging
 import platform
 import re
+import sys
 
 import discord
 from discord.ext import commands
 
 import database as db
+from message import Message
 
 DB_FILE = 'karma.db'
+
+logger = logging.getLogger(__name__)
+logger.setLevel('DEBUG')
+
+formatter = logging.Formatter('[%(levelname)s]: %(message)s')
+handler = logging.StreamHandler(sys.stdout)
+
+handler.setFormatter(formatter)
+logger.addHandler(handler)
 
 
 client = commands.Bot(
@@ -26,28 +38,12 @@ async def on_ready():
 
 @client.event
 async def on_message(message):
-    await client.process_commands(message)  # check if command has been called
+    await client.process_commands(message)  # check if a command was called
 
-    pattern = re.compile(r'<@!?(?P<user_id>\d+)>\s?(?P<mod>[\+-]{2,})')
-    match = pattern.search(message.content)
-
-    if match:
-        mod = len(match.group('mod')) - 1  # given karma is one fewer than the number of +'es or -'es
-        mod = min(mod, 3)  # limit change to 3 karma maximum
-        change_type = match.group('mod')[0]
-        if change_type == '-':
-            mod = mod * -1
-
-        if message.author.id == match.group('user_id'):
-            response = "Don't be a weasel!" if change_type == '+' else "Don't be so hard on yourself."
-            return await client.send_message(message.channel, response)
-
-        user_id = match.group('user_id')
-        entry = db.update_karma(user_id, mod)
-        change = 'increased' if mod > 0 else 'decreased'
-
-        response = "<@%s>'s karma has %s to %d" % (user_id, change, entry.karma)
-        await client.send_message(message.channel, response)
+    input = Message(message)
+    if input.grants_karma():
+        response = input.process_karma()
+        return await client.send_message(message.channel, response)
 
 
 @client.command(help="check if I'm alive, yo")
@@ -57,7 +53,7 @@ async def ping():
 
 @client.command(help='get karma for specified user')
 async def get(user: str):
-    print('called getkarma with %s' % user)
+    logger.info('called get with %s' % user)
     pattern = re.compile(r'<@!?(?P<user_id>\d+)>')
     match = pattern.search(user)
     if match:
@@ -67,16 +63,19 @@ async def get(user: str):
 
 @client.command(pass_context=True, help='get karma for every user')
 async def all(ctx):
-    result = db.get_all_karma()
-    server = ctx.message.server
     output_lines = []
+    server = ctx.message.server
+    result = db.get_all_karma()
+    sorted_karma = sorted(result, key=lambda k: k.karma, reverse=True)
 
     output_lines.append('Karma Summary:')
     output_lines.append('```')
-    output_lines += [
-        '%s %3d' % (server.get_member(entry.discord_id).name.ljust(20), entry.karma)
-        for entry in result
-    ]
+
+    for pos, user in enumerate(sorted_karma, start=1):
+        karma = user.karma
+        name = server.get_member(user.discord_id).name
+        output_lines.append('{:4d}. {:.<20s} {}'.format(pos, name, karma))
+
     output_lines.append('```')
     response = '\n'.join(output_lines)
     await client.say(response)
