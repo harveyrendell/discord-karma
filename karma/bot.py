@@ -52,33 +52,55 @@ async def ping():
 
 
 @client.command(help='get karma for specified user')
-async def get(user: str):
-    logger.info('called get with %s' % user)
+async def get(*args):
+    logger.info('called get with {}'.format(', '.join(args)))
+
     pattern = re.compile(r'<@!?(?P<user_id>\d+)>')
-    match = pattern.search(user)
-    if match:
-        entry = db.get_karma(match.group('user_id'))
-        await client.say('<@%s> has %d total karma' % (entry.discord_id, entry.karma))
+
+    for key in args:
+        match = pattern.search(key)
+        if match:
+            entry = db.get_karma(match.group('user_id'))
+            await client.say('<@%s> has %d total karma' % (entry.discord_id, entry.karma))
 
 
 @client.command(pass_context=True, help='get karma for every user')
 async def all(ctx):
-    output_lines = []
     server = ctx.message.server
     result = db.get_all_karma()
     sorted_karma = sorted(result, key=lambda k: k.karma, reverse=True)
+    response = karma_summary(sorted_karma, server)
 
-    output_lines.append('Karma Summary:')
+    await client.say(response)
+
+
+@client.command(pass_context=True, help='get the three users with the most karma')
+async def top(ctx, count=3):
+    server = ctx.message.server
+    result = db.get_all_karma()
+    sorted_karma = sorted(result, key=lambda k: k.karma, reverse=True)
+    response = karma_summary(sorted_karma, server, count=count)
+
+    await client.say(response)
+
+def karma_summary(items, server, count=None):
+    if not count:
+        count = len(items)
+    items = items[:count]  # trim list if requested
+
+    output_lines = ['Karma Summary:']
     output_lines.append('```')
 
-    for pos, user in enumerate(sorted_karma, start=1):
+    for pos, user in enumerate(items, start=1):
         karma = user.karma
         name = server.get_member(user.discord_id).name
         output_lines.append('{:4d}. {:.<20s} {}'.format(pos, name, karma))
-
     output_lines.append('```')
-    response = '\n'.join(output_lines)
-    await client.say(response)
+
+    if count > len(items):
+        output_lines.append('*No more entries available*')
+
+    return '\n'.join(output_lines)
 
 
 def main():
