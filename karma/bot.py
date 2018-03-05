@@ -11,6 +11,8 @@ from discord.ext import commands
 import database as db
 from message import Message
 
+from timing import Timing
+
 DB_FILE = 'karma.db'
 
 logger = logging.getLogger(__name__)
@@ -31,9 +33,12 @@ client = commands.Bot(
 
 @client.event
 async def on_ready():
-    print('Logged in as {}'.format(client.user.name))
-    print('--------')
-    print('Current Discord.py Version: {} | Current Python Version: {}'.format(discord.__version__, platform.python_version()))
+    start_time = Timing.start()
+
+    logger.info('Logged in as {}'.format(client.user.name))
+    logger.info('--------')
+    logger.info('Current Discord.py Version: {} | Current Python Version: {}'.format(discord.__version__, platform.python_version()))
+    logger.info('Startup time: {}'.format(Timing.human_readable(start_time)))
 
 
 @client.event
@@ -49,6 +54,13 @@ async def on_message(message):
 @client.command(help="check if I'm alive, yo")
 async def ping():
     await client.say('Beep boop')
+
+
+@client.command(help="check how long the service has been running for")
+async def uptime():
+    uptime = Timing.get_uptime_readable()
+    response = 'Uptime: {}'.format(uptime)
+    await client.say(response)
 
 
 @client.command(help='get karma for specified user')

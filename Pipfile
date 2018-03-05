@@ -5,6 +5,7 @@ pytest = "*"
 [packages]
 "discord.py" = "*"
 sqlalchemy = "*"
+tzlocal = "*"
 
 [requires]
 python_version = "3.6"
