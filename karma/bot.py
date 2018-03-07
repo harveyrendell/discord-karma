@@ -63,7 +63,7 @@ async def uptime():
     await client.say(response)
 
 
-@client.command(help='get karma for specified user')
+@client.command(help='get karma for specified users')
 async def get(*args):
     logger.info('called get with {}'.format(', '.join(args)))
 
