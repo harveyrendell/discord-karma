@@ -1,7 +1,7 @@
 import logging
 import re
 
-import database as db
+import karma.database as db
 
 MAX_KARMA_CHANGE = 1
 

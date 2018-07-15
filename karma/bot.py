@@ -8,10 +8,10 @@ import sys
 import discord
 from discord.ext import commands
 
-import database as db
-from message import Message
+import karma.database as db
+from karma.message import Message
 
-from timing import Timing
+from karma.timing import Timing
 
 DB_FILE = 'karma.db'
 
