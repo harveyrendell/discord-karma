@@ -27,8 +27,7 @@ logger.addHandler(handler)
 
 client = commands.Bot(
     description='',
-    command_prefix='karma ',
-    pm_help=True
+    command_prefix=commands.when_mentioned,
 )
 
 @client.event

@@ -14,3 +14,9 @@ pipenv install
 ```bash
 pipenv run python -m karma.bot -t <discord-bot-token>
 ```
+
+## Test
+
+```bash
+pipenv run pytest tests/
+```
