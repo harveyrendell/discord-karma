@@ -50,11 +50,6 @@ async def on_message(message):
         return await client.send_message(message.channel, response)
 
 
-@client.command(help="check if I'm alive, yo")
-async def ping():
-    await client.say('Beep boop')
-
-
 @client.command(help="check how long the service has been running for")
 async def uptime():
     uptime = Timing.get_uptime_readable()
@@ -73,6 +68,8 @@ async def get(*args):
         if match:
             entry = db.get_karma(match.group('user_id'))
             await client.say('<@%s> has %d total karma' % (entry.discord_id, entry.karma))
+        else:
+            await client.say('Could not find user: {}'.format(key))
 
 
 @client.command(pass_context=True, help='get karma for every user')
