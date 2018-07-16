@@ -1,6 +1,8 @@
 [dev-packages]
+mock = "*"
 pylint = "*"
 pytest = "*"
+pytest-watch = "*"
 
 [packages]
 "discord.py" = "*"
