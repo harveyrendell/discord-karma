@@ -6,25 +6,25 @@ import sqlalchemy as sql
 
 Base = declarative_base()
 
-def get_karma(id):
-    return get_or_create(id)
+def get_karma(uid):
+    return get_or_create(uid)
 
 
 def get_all_karma():
     return session.query(Karma).all()
 
 
-def update_karma(id, mod):
-    row = get_or_create(id)
+def update_karma(uid, mod):
+    row = get_or_create(uid)
     row.karma += mod
     session.commit()
     return row
 
 
-def get_or_create(id):
-    object = session.query(Karma).filter_by(discord_id=id).first()
+def get_or_create(uid):
+    object = session.query(Karma).filter_by(discord_id=uid).first()
     if not object:
-        object = Karma(discord_id=id, karma=0)
+        object = Karma(discord_id=uid, karma=0)
         session.add(object)
     return object
 

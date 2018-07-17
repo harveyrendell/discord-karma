@@ -1,4 +1,3 @@
-import logging
 import re
 
 import karma.database as db
@@ -31,8 +30,7 @@ class Message():
             user_id = match.group('user_id')
             entry = db.update_karma(user_id, mod)
             change = 'increased' if mod > 0 else 'decreased'
-
-            return "<@%s>'s karma has %s to %d" % (user_id, change, entry.karma)
+            return "<@{}>'s karma has {} to {}".format(user_id, change, entry.karma)
 
     def _find_karma(self):
         pattern = re.compile(r'<@!?(?P<user_id>\d+)>\s?(?P<mod>[\+-]{2,})')
