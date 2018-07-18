@@ -88,3 +88,23 @@ def test_process_limits_negative_karma(mock_update_function):
 
     assert mock_update_function.called
     assert args == ('0123456789', -5)
+
+
+@mock.patch('karma.message.db.update_karma', return_value=mock.Mock(karma=23))
+def test_process_karma_produces_correct_output_for_increase(mock_update_function):
+    sent_message = discord.Message(content='<@0123456789> ++', reactions=[])
+    karma_message = message.Message(sent_message)
+    response = karma_message.process_karma()
+
+    assert mock_update_function.called
+    assert response == "<@0123456789>'s karma has increased to 23"
+
+
+@mock.patch('karma.message.db.update_karma', return_value=mock.Mock(karma=-14))
+def test_process_karma_produces_correct_output_for_decrease(mock_update_function):
+    sent_message = discord.Message(content='<@9876543210> --', reactions=[])
+    karma_message = message.Message(sent_message)
+    response = karma_message.process_karma()
+
+    assert mock_update_function.called
+    assert response == "<@9876543210>'s karma has decreased to -14"
