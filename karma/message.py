@@ -33,6 +33,6 @@ class Message():
             return "<@{}>'s karma has {} to {}".format(user_id, change, entry.karma)
 
     def _find_karma(self):
-        pattern = re.compile(r'<@!?(?P<user_id>\d+)>\s?(?P<mod>[\+-]{2,})')
+        pattern = re.compile(r'<@!?(?P<user_id>\d+)>\s?(?P<mod>([+]{2,}|[-]{2,}))')
         self.match = pattern.search(self.message.content)
         return self.match
