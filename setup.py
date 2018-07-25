@@ -8,4 +8,9 @@ setup(
     author_email='hjrendell@gmail.com',
     url='https://github.com/Puhapig/discord-karma',
     packages=['karma'],
+    install_requires=[
+        'discord.py',
+        'sqlalchemy',
+        'tzlocal',
+    ],
 )
