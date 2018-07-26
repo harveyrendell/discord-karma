@@ -1,8 +1,9 @@
 from distutils.core import setup
+import karma
 
 setup(
     name='discord-karma',
-    version='0.0.1',
+    version=karma.__version__,
     description='Karma Bot for Discord',
     author='Harvey Rendell',
     author_email='hjrendell@gmail.com',

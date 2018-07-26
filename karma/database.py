@@ -1,3 +1,5 @@
+import os
+
 from sqlalchemy import Column, Integer, String
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.ext.declarative import declarative_base
@@ -5,6 +7,7 @@ from sqlalchemy.ext.declarative import declarative_base
 import sqlalchemy as sql
 
 Base = declarative_base()
+session = None
 
 def get_karma(uid):
     return get_or_create(uid)
@@ -35,7 +38,11 @@ class Karma(Base):
     karma = Column(Integer)
 
 
-engine = sql.create_engine('sqlite:///karma.db')
-Base.metadata.create_all(engine)
-DBSession = sessionmaker(bind=engine)
-session = DBSession()
+def init(path='.'):
+    global session
+
+    db_path = os.path.join(path, 'karma.db')
+    engine = sql.create_engine('sqlite:///{}'.format(db_path))
+    Base.metadata.create_all(engine)
+    DBSession = sessionmaker(bind=engine)
+    session = DBSession()

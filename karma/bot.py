@@ -8,12 +8,11 @@ import sys
 import discord
 from discord.ext import commands
 
-import karma.database as db
 from karma.message import Message
-
 from karma.timing import Timing
+import karma.database as db
+import karma
 
-DB_FILE = 'karma.db'
 
 logger = logging.getLogger(__name__)
 logger.setLevel('DEBUG')
@@ -36,6 +35,7 @@ async def on_ready():
 
     logger.info('Logged in as {}'.format(client.user.name))
     logger.info('--------')
+    logger.info('Karma Bot Version: {}'.format(karma.__version__))
     logger.info('Current Discord.py Version: {} | Current Python Version: {}'.format(discord.__version__, platform.python_version()))
     logger.info('Startup time: {}'.format(Timing.human_readable(start_time)))
 
@@ -52,15 +52,18 @@ async def on_message(message):
 
 @client.command(help="check how long the service has been running for")
 async def uptime():
+    logger.info("Command invoked - uptime")
+
     uptime = Timing.get_uptime_readable()
     response = 'Uptime: {}'.format(uptime)
+
+    logger.info("Response - {}".format(response))
     await client.say(response)
 
 
 @client.command(help='get karma for specified users')
 async def get(*args):
-    logger.info('called get with {}'.format(', '.join(args)))
-
+    logger.info("Command invoked: get | {}".format(*args))
     pattern = re.compile(r'<@!?(?P<user_id>\d+)>')
 
     for key in args:
@@ -74,16 +77,21 @@ async def get(*args):
 
 @client.command(pass_context=True, help='get karma for every user')
 async def all(ctx):
+    logger.info("Command invoked: all")
+
     server = ctx.message.server
     result = db.get_all_karma()
     sorted_karma = sorted(result, key=lambda k: k.karma, reverse=True)
     response = karma_summary(sorted_karma, server)
 
+    logger.info("Response - {}".format(response))
     await client.say(response)
 
 
 @client.command(pass_context=True, help='get the three users with the most karma')
 async def top(ctx, count=3):
+    logger.info("Command invoked: top | {}".format(count))
+
     server = ctx.message.server
     result = db.get_all_karma()
     sorted_karma = sorted(result, key=lambda k: k.karma, reverse=True)
@@ -100,9 +108,11 @@ def karma_summary(items, server, count=None):
     output_lines.append('```')
 
     for pos, user in enumerate(items, start=1):
-        karma = user.karma
-        name = server.get_member(user.discord_id).name
-        output_lines.append('{:4d}. {:.<20s} {}'.format(pos, name, karma))
+        member = server.get_member(user.discord_id)
+
+        if member:
+            logger.info("Found member: {} ({})".format(member.name, member.id))
+            output_lines.append('{:4d}. {:.<20s} {}'.format(pos, member.name, user.karma))
     output_lines.append('```')
 
     if count > len(items):
@@ -114,7 +124,9 @@ def karma_summary(items, server, count=None):
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('-t', '--token', required=True, type=str)
+    parser.add_argument('-d', '--db-path', required=False, type=str, default='.')
     args = parser.parse_args()
+    db.init(path=args.db_path)
     client.run(args.token)
 
 
