@@ -2,7 +2,6 @@ import argparse
 import asyncio
 import logging
 import platform
-import re
 import sys
 
 import discord
@@ -24,101 +23,32 @@ handler.setFormatter(formatter)
 logger.addHandler(handler)
 
 
-client = commands.Bot(
+bot = commands.Bot(
     description='',
     command_prefix=commands.when_mentioned,
 )
 
-@client.event
+extensions = ['karma.cogs.karma', 'karma.cogs.util']
+
+@bot.event
 async def on_ready():
     start_time = Timing.start()
 
-    logger.info('Logged in as {}'.format(client.user.name))
+    logger.info('Logged in as {}'.format(bot.user.name))
     logger.info('--------')
     logger.info('Karma Bot Version: {}'.format(karma.__version__))
     logger.info('Current Discord.py Version: {} | Current Python Version: {}'.format(discord.__version__, platform.python_version()))
     logger.info('Startup time: {}'.format(Timing.human_readable(start_time)))
 
 
-@client.event
+@bot.event
 async def on_message(message):
-    await client.process_commands(message)  # check if a command was called
+    await bot.process_commands(message)  # check if a command was called
 
     input = Message(message)
     if input.grants_karma():
         response = input.process_karma()
-        return await client.send_message(message.channel, response)
-
-
-@client.command(help="check how long the service has been running for")
-async def uptime():
-    logger.info("Command invoked - uptime")
-
-    uptime = Timing.get_uptime_readable()
-    response = 'Uptime: {}'.format(uptime)
-
-    logger.info("Response - {}".format(response))
-    await client.say(response)
-
-
-@client.command(help='get karma for specified users')
-async def get(*args):
-    logger.info("Command invoked: get | {}".format(*args))
-    pattern = re.compile(r'<@!?(?P<user_id>\d+)>')
-
-    for key in args:
-        match = pattern.search(key)
-        if match:
-            entry = db.get_karma(match.group('user_id'))
-            await client.say('<@%s> has %d total karma' % (entry.discord_id, entry.karma))
-        else:
-            await client.say('Could not find user: {}'.format(key))
-
-
-@client.command(pass_context=True, help='get karma for every user')
-async def all(ctx):
-    logger.info("Command invoked: all")
-
-    server = ctx.message.server
-    result = db.get_all_karma()
-    sorted_karma = sorted(result, key=lambda k: k.karma, reverse=True)
-    response = karma_summary(sorted_karma, server)
-
-    logger.info("Response - {}".format(response))
-    await client.say(response)
-
-
-@client.command(pass_context=True, help='get the three users with the most karma')
-async def top(ctx, count=3):
-    logger.info("Command invoked: top | {}".format(count))
-
-    server = ctx.message.server
-    result = db.get_all_karma()
-    sorted_karma = sorted(result, key=lambda k: k.karma, reverse=True)
-    response = karma_summary(sorted_karma, server, count=count)
-
-    await client.say(response)
-
-def karma_summary(items, server, count=None):
-    if not count:
-        count = len(items)
-    items = items[:count]  # trim list if requested
-
-    output_lines = ['Karma Summary:']
-    output_lines.append('```')
-
-    for pos, user in enumerate(items, start=1):
-        member = server.get_member(user.discord_id)
-
-        if member:
-            logger.info("Found member: {} ({})".format(member.name, member.id))
-            output_lines.append('{:4d}. {:.<20s} {}'.format(pos, member.name, user.karma))
-    output_lines.append('```')
-
-    if count > len(items):
-        output_lines.append('*No more entries available*')
-
-    return '\n'.join(output_lines)
+        return await bot.send_message(message.channel, response)
 
 
 def main():
@@ -127,8 +57,15 @@ def main():
     parser.add_argument('-d', '--db-path', required=False, type=str, default='.')
     args = parser.parse_args()
     db.init(path=args.db_path)
-    client.run(args.token)
+    bot.run(args.token)
+    bot.close()
 
 
 if __name__ == "__main__":
+    for extension in extensions:
+        try:
+            bot.load_extension(extension)
+        except Exception as e:
+            logger.error('Failed to load extension {}'.format(extension))
+            logger.error(e)
     main()
