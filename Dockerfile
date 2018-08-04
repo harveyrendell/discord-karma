@@ -1,4 +1,4 @@
-FROM python:3 AS build
+FROM python:3.6-slim AS build
 ADD . /code
 WORKDIR /code
 RUN python setup.py sdist && \

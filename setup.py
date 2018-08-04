@@ -8,7 +8,10 @@ setup(
     author='Harvey Rendell',
     author_email='hjrendell@gmail.com',
     url='https://github.com/Puhapig/discord-karma',
-    packages=['karma'],
+    packages=[
+        'karma',
+        'karma.cogs',
+    ],
     install_requires=[
         'discord.py',
         'sqlalchemy',
