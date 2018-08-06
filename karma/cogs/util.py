@@ -1,12 +1,16 @@
 import discord
 from discord.ext import commands
 
+from karma import logger as logger
+from karma.timing import Timing
+
+
 class Util:
     def __init__(self, bot):
         self.bot = bot
 
     @commands.command(help="Display the service uptime.")
-    async def uptime():
+    async def uptime(self):
         logger.info("Command invoked - uptime")
 
         uptime = Timing.get_uptime_readable()
