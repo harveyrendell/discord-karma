@@ -62,7 +62,7 @@ def karma_summary(items, server, count=None):
 
         if member:
             logger.info("Found member: {} ({})".format(member.name, member.id))
-            output_lines.append('{:4d}. {:.<20s} {}'.format(pos, member.name, user.karma))
+            output_lines.append('{:4d}. {:.<32s} {}'.format(pos, member.name, user.karma))
     output_lines.append('```')
 
     if count > len(items):
