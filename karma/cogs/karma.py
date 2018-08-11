@@ -33,8 +33,7 @@ class Karma:
         sorted_karma = sorted(result, key=lambda k: k.karma, reverse=True)
         response = karma_summary(sorted_karma, server)
 
-        logger.info("Response - {}".format(response))
-        await self.bot.say(response)
+        await self.bot.say(embed=response)
 
 
     @commands.command(pass_context=True, help='Get X users with the most karma.')
@@ -46,7 +45,7 @@ class Karma:
         sorted_karma = sorted(result, key=lambda k: k.karma, reverse=True)
         response = karma_summary(sorted_karma, server, count=count)
 
-        await self.bot.say(response)
+        await self.bot.say(embed=response)
 
 
 def karma_summary(items, server, count=None):
@@ -54,21 +53,28 @@ def karma_summary(items, server, count=None):
         count = len(items)
     items = items[:count]  # trim list if requested
 
-    output_lines = ['Karma Summary:']
-    output_lines.append('```')
+    user_list = []
+    icon = ':star:'
 
     for pos, user in enumerate(items, start=1):
         member = server.get_member(user.discord_id)
-
         if member:
             logger.info("Found member: {} ({})".format(member.name, member.id))
-            output_lines.append('{:4d}. {:.<32s} {}'.format(pos, member.name, user.karma))
-    output_lines.append('```')
+            line = '{} (`{}`) **{:24}**'.format(
+                    icon,
+                    user.karma,
+                    member.name
+            )
+            user_list.append(line)
 
+    output = discord.Embed(
+            title='Karma Summary',
+            description='\n'.join(user_list),
+            colour=discord.Colour.purple()
+            )
     if count > len(items):
-        output_lines.append('*No more entries available*')
-
-    return '\n'.join(output_lines)
+        output.description += '\n\n*No more entries available*'
+    return output
 
 
 # The setup fucntion below is neccesarry. Remember we give bot.add_cog() the name of the class.

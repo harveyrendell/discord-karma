@@ -18,7 +18,11 @@ bot = commands.Bot(
     command_prefix=commands.when_mentioned,
 )
 
-extensions = ['karma.cogs.karma', 'karma.cogs.util']
+extensions = [
+    'karma.cogs.karma',
+    'karma.cogs.util',
+    'karma.cogs.embed',
+]
 
 @bot.event
 async def on_ready():
@@ -36,16 +40,15 @@ async def on_message(message):
     if message.author.bot:
         return None
 
-    await bot.process_commands(message)  # check if a command was called
-
     input = Message(message)
     if input.grants_karma():
         if message.server is None:
             PM_ERROR_RESPONSE = "You know I can't do that. :wink:"
             return await bot.send_message(message.channel, PM_ERROR_RESPONSE)
-
         response = input.process_karma()
         return await bot.send_message(message.channel, response)
+
+    await bot.process_commands(message)  # check if a command was called
 
 
 def main():
