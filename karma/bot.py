@@ -21,7 +21,6 @@ bot = commands.Bot(
 extensions = [
     'karma.cogs.karma',
     'karma.cogs.util',
-    'karma.cogs.embed',
 ]
 
 @bot.event
