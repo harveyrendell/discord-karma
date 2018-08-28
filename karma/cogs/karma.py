@@ -1,6 +1,7 @@
 import re
 import discord
 from discord.ext import commands
+import math
 
 from karma import logger as logger
 import karma.database as db
@@ -54,14 +55,12 @@ def karma_summary(items, server, count=None):
     items = items[:count]  # trim list if requested
 
     user_list = []
-    icon = ':star:'
 
     for pos, user in enumerate(items, start=1):
         member = server.get_member(user.discord_id)
         if member:
             logger.info("Found member: {} ({})".format(member.name, member.id))
-            line = '{} (`{}`) **{:24}**'.format(
-                    icon,
+            line = '({}) **{:24}**'.format(
                     user.karma,
                     member.name
             )
@@ -69,13 +68,35 @@ def karma_summary(items, server, count=None):
 
     output = discord.Embed(
             title='Karma Summary',
-            description='\n'.join(user_list),
+            description=iconise_list(user_list),
             colour=discord.Colour.purple()
             )
     if count > len(items):
         output.description += '\n\n*No more entries available*'
     return output
 
+
+def iconise_list(lines):
+    total_length = len(lines)
+    icons = []
+
+    for i in range(total_length):
+        if i is 1:
+            icon = ':sparkles:'
+        elif i >= max(2, round(0.1 * total_length)):
+            icon = ':star2:'
+        elif i >= max(3, round(0.3 * total_length)):
+            icon = ':star:'
+        elif i >= max(4, round(0.5 * total_length)):
+            icon = ':white_sun_cloud:'
+        elif i >= max(5, round(0.9 * total_length)):
+            icon = ':cloud:'
+        elif i >= max(6, round(0.95 * total_length)):
+            icon = ':cloud_rain:'
+        else:
+            icon = ':thunder_cloud_rain:'
+        lines[i-1] = icon + ' ' + lines[i-1]
+    return '\n'.join(lines)
 
 # The setup fucntion below is neccesarry. Remember we give bot.add_cog() the name of the class.
 # When we load the cog, we use the name of the file.
