@@ -1,4 +1,4 @@
-version: '3'
+version: '3.7'
 services:
   client:
     build: .
@@ -7,6 +7,14 @@ services:
       - .env
     volumes:
       - "db-data:/data"
+  prometheus:
+    image: prom/prometheus
+    ports:
+      - "9090:9090"
+    links:
+      - client
+    volumes:
+      - "./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml"
 
 volumes:
   db-data:
