@@ -28,6 +28,7 @@ class Karma:
     @commands.command(pass_context=True, help='Get karma for all users.')
     async def all(self, ctx):
         logger.info("Command invoked: all")
+        await self.bot.send_typing(ctx.message.channel)
 
         server = ctx.message.server
         result = db.get_all_karma()
@@ -40,6 +41,7 @@ class Karma:
     @commands.command(pass_context=True, help='Get X users with the most karma.')
     async def top(self, ctx, count=3):
         logger.info("Command invoked: top | {}".format(count))
+        await self.bot.send_typing(ctx.message.channel)
 
         server = ctx.message.server
         result = db.get_all_karma()
