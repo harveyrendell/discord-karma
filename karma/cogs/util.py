@@ -19,6 +19,7 @@ class Util:
         logger.info("Response - {}".format(response))
         await self.bot.say(response)
 
+
 # The setup fucntion below is neccesarry. Remember we give bot.add_cog() the name of the class.
 # When we load the cog, we use the name of the file.
 def setup(bot):
