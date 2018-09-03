@@ -8,4 +8,5 @@ FROM python:3.6-slim
 COPY --from=build /code/dist/discord-karma.tar.gz /run
 RUN pip install /run/discord-karma.tar.gz
 
-ENTRYPOINT ["./entrypoint.sh"]
+ENTRYPOINT python -m karma.bot --token $DISCORD_TOKEN --db-path $KARMA_DB_PATH
+
