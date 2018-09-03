@@ -14,7 +14,7 @@ class Message():
     def grants_karma(self):
         return True if self._find_karma() else False
 
-    def process_karma(self):
+    def process_karma(self, author):
         match = self.match or self._find_karma()
 
         if match:
@@ -29,6 +29,7 @@ class Message():
 
             user_id = match.group('user_id')
             entry = db.update_karma(user_id, mod)
+            db.add_karma_event(self.message, author)
             change = 'increased' if mod > 0 else 'decreased'
             return "<@{}>'s karma has {} to {}".format(user_id, change, entry.karma)
 

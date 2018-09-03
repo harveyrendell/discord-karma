@@ -21,6 +21,7 @@ bot = commands.Bot(
 extensions = [
     'karma.cogs.karma',
     'karma.cogs.util',
+    'karma.cogs.events',
 ]
 
 @bot.event
@@ -37,14 +38,14 @@ async def on_ready():
 @bot.event
 async def on_message(message):
     if message.author.bot:
-        return None
+        return
 
     input = Message(message)
     if input.grants_karma():
         if message.server is None:
             PM_ERROR_RESPONSE = "You know I can't do that. :wink:"
             return await bot.send_message(message.channel, PM_ERROR_RESPONSE)
-        response = input.process_karma()
+        response = input.process_karma(message.author)
         return await bot.send_message(message.channel, response)
 
     await bot.process_commands(message)  # check if a command was called
@@ -67,4 +68,5 @@ if __name__ == "__main__":
         except Exception as e:
             logger.error('Failed to load extension {}'.format(extension))
             logger.error(e)
+            raise(e)
     main()
