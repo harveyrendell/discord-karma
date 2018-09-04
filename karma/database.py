@@ -1,10 +1,12 @@
 import os
 
-from sqlalchemy import Column, Integer, String
+from sqlalchemy import Column, Integer, String, Float
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.ext.declarative import declarative_base
-
 import sqlalchemy as sql
+
+from karma import timing
+
 
 Base = declarative_base()
 session = None
@@ -32,11 +34,31 @@ def get_or_create(uid):
     return object
 
 
+def add_karma_event(message, author):
+    row = KarmaEvent(
+        timestamp=timing.Timing().current_time().timestamp(),
+        author_id=author.id,
+        message=message.content
+    )
+    session.add(row)
+    session.commit()
+
+
+def get_all_karma_events():
+    return session.query(KarmaEvent).all()
+
+
 class Karma(Base):
     __tablename__ = 'karma'
     discord_id = Column(String, primary_key=True)
     karma = Column(Integer)
 
+
+class KarmaEvent(Base):
+    __tablename__ = 'karma-event'
+    timestamp = Column(Float, primary_key=True)
+    author_id = Column(String)
+    message = Column(String)
 
 def init(path='.'):
     global session
