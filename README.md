@@ -20,3 +20,5 @@ pipenv run python -m karma.bot -t <discord-bot-token>
 ```bash
 pipenv run pytest
 ```
+
+- Author: Harvey Rendell
