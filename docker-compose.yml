@@ -10,16 +10,17 @@ services:
       - "db-data:/data"
 
   prometheus:
-    image: prom/prometheus
+    image: tantalic/armv7-prometheus:v1.5.1
     ports:
       - "9090:9090"
     volumes:
-      - "./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml"
+      - "./prometheus/:/etc/prometheus/"
+      - "prometheus-data:/prometheus"
     depends_on:
       - cadvisor
 
   cadvisor:
-    image: google/cadvisor:latest
+    image: harveyr/cadvisor-arm
     ports:
     - 8080:8080
     volumes:
@@ -28,5 +29,16 @@ services:
     - /sys:/sys:ro
     - /var/lib/docker/:/var/lib/docker:ro
 
+  grafana:
+    image: raymondmm/grafana
+    ports:
+      - "3000:3000"
+    volumes:
+      - grafana-data:/var/lib/grafana
+      - ./grafana/provisioning/:/etc/grafana/provisioning/
+    restart: always
+
 volumes:
   db-data:
+  prometheus-data:
+  grafana-data:
