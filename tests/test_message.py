@@ -11,6 +11,7 @@ import pytest
 @pytest.mark.parametrize('valid_input', [
     '<@0123456789> ++',
     '<@!0123456789> ++',
+    '<@!0123456789>  ++',
     '<@0123456789>++',
     '<@0123456789>++--',
     '<@01234567890123456789> ++',
@@ -26,13 +27,14 @@ def test_find_karma_in_valid_message(valid_input):
     'Bob is a goat',
     'wow <@!0123456789> that was cool ++',
     '<@0123456789> + +',
-    '<@!0123456789>  ++',
+    '<@!0123456789>   ++',
     '<@0123abc456def789> ++',
     '<0123abc456def789> ++',
     '<0123abc456def789> +-',
     '<0123abc456def789> -+--+',
     '<@0123456789> +--+',
     '<@0123456789>',
+    '<@0123456789>         ++',
 ])
 def test_find_no_karma_in_invalid_message(invalid_input):
     sent_message = discord.Message(content=invalid_input, reactions=[])
