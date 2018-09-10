@@ -1,3 +1,5 @@
+"""Message processing and handling."""
+
 import re
 
 import karma.database as db
@@ -6,15 +8,18 @@ MAX_KARMA_CHANGE = 1
 
 
 class Message():
+    """Represents a message object in Discord."""
 
     def __init__(self, message, _match=None):
         self.message = message
         self.match = _match
 
     def grants_karma(self):
+        """Boolean expression to check if karma was given."""
         return True if self._find_karma() else False
 
-    def process_karma(self):
+    def process_karma(self, author):
+        """Update the database with data for a karma event."""
         match = self.match or self._find_karma()
 
         if match:
@@ -29,6 +34,7 @@ class Message():
 
             user_id = match.group('user_id')
             entry = db.update_karma(user_id, mod)
+            db.add_karma_event(self.message, user_id, mod)
             change = 'increased' if mod > 0 else 'decreased'
             return "<@{}>'s karma has {} to {}".format(user_id, change, entry.karma)
 

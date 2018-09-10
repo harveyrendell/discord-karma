@@ -12,7 +12,6 @@ from karma import logger as logger
 import karma
 
 
-
 bot = commands.Bot(
     description='',
     command_prefix=commands.when_mentioned,
@@ -21,6 +20,7 @@ bot = commands.Bot(
 extensions = [
     'karma.cogs.karma',
     'karma.cogs.util',
+    'karma.cogs.events',
 ]
 
 @bot.event
@@ -37,14 +37,14 @@ async def on_ready():
 @bot.event
 async def on_message(message):
     if message.author.bot:
-        return None
+        return
 
     input = Message(message)
     if input.grants_karma():
         if message.server is None:
             PM_ERROR_RESPONSE = "You know I can't do that. :wink:"
             return await bot.send_message(message.channel, PM_ERROR_RESPONSE)
-        response = input.process_karma()
+        response = input.process_karma(message.author)
         return await bot.send_message(message.channel, response)
 
     await bot.process_commands(message)  # check if a command was called
@@ -53,7 +53,8 @@ async def on_message(message):
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('-t', '--token', required=True, type=str)
-    parser.add_argument('-d', '--db-path', required=False, type=str, default='.')
+    parser.add_argument('-d', '--db-path', type=str, default='.')
+    parser.add_argument('-o', '--owner-id', type=str, default=None)
     args = parser.parse_args()
     db.init(path=args.db_path)
     bot.run(args.token)
@@ -67,4 +68,5 @@ if __name__ == "__main__":
         except Exception as e:
             logger.error('Failed to load extension {}'.format(extension))
             logger.error(e)
+            raise(e)
     main()
