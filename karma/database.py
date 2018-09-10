@@ -34,11 +34,15 @@ def get_or_create(uid):
     return object
 
 
-def add_karma_event(message, author):
+def add_karma_event(message, karma_user_id, karma_change):
     row = KarmaEvent(
+        user_id=karma_user_id,
+        channel_id=message.channel.id,
+        guild_id=message.server.id,
+        karma_change=karma_change,
+        given_by=message.author.id,
+        message=message.content,
         timestamp=timing.Timing().current_time().timestamp(),
-        author_id=author.id,
-        message=message.content
     )
     session.add(row)
     session.commit()
@@ -55,10 +59,17 @@ class Karma(Base):
 
 
 class KarmaEvent(Base):
-    __tablename__ = 'karma-event'
-    timestamp = Column(Float, primary_key=True)
-    author_id = Column(String)
+    __tablename__ = 'karma-events'
+    event_id = Column(Integer, primary_key=True)
+    user_id = Column(String)
+    channel_id = Column(String)
+    guild_id = Column(String)
+    karma_change = Column(Integer)
+    given_by = Column(String)
     message = Column(String)
+    timestamp = Column(Float)
+    sqllite_autoincrement = True
+
 
 def init(path='.'):
     global session

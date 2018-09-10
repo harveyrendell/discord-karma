@@ -12,7 +12,6 @@ from karma import logger as logger
 import karma
 
 
-
 bot = commands.Bot(
     description='',
     command_prefix=commands.when_mentioned,
@@ -54,7 +53,8 @@ async def on_message(message):
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('-t', '--token', required=True, type=str)
-    parser.add_argument('-d', '--db-path', required=False, type=str, default='.')
+    parser.add_argument('-d', '--db-path', type=str, default='.')
+    parser.add_argument('-o', '--owner-id', type=str, default=None)
     args = parser.parse_args()
     db.init(path=args.db_path)
     bot.run(args.token)
