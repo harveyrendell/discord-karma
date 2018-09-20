@@ -50,6 +50,21 @@ class Karma:
 
         await self.bot.say(embed=response)
 
+    @commands.command(pass_context=True, help='Weekly update of Karma TopDOG')
+    async def WM(self, ctx):
+        server = ctx.message.server
+        result = db.get_all_karma()
+        sorted_karma = sorted(result, key=lambda k: (k.karma, ), reverse=True)
+
+        for user in sorted_karma:
+            member = server.get_member(user.discord_id)
+            if member:
+                 await self.bot.say(f"Congratulations {member}, you are the TOPDOG for the week! You have a score of {}")
+
+
+        print ("Congratulations response(3), you have a score of response (2))
+        await self.bot.say(embed=response)
+
 
 def karma_summary(items, server, count=None):
     if not count:
