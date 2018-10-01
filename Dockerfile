@@ -1,12 +1,14 @@
-FROM python:3.6-slim AS build
-ADD . /code
-WORKDIR /code
-RUN python setup.py sdist && \
-    cp dist/$(python setup.py --fullname).tar.gz dist/discord-karma.tar.gz
+from python:3.6-slim
 
-FROM python:3.6-slim
-COPY --from=build /code/dist/discord-karma.tar.gz /run
-RUN pip install /run/discord-karma.tar.gz
+MAINTAINER hjrendell@gmail.com
 
-ENTRYPOINT python -m karma.bot --token $DISCORD_TOKEN --db-path $KARMA_DB_PATH
+RUN apt-get update && apt-get install -y git
 
+COPY . /app
+WORKDIR /app
+
+RUN pip install pipenv
+
+RUN pipenv install --system --deploy
+
+CMD python -m karma.bot -t $DISCORD_TOKEN -d $KARMA_DB_PATH

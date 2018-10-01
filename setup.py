@@ -12,10 +12,4 @@ setup(
         'karma',
         'karma.cogs',
     ],
-    install_requires=[
-        'discord.py',
-        'multidict==4.3.1',
-        'sqlalchemy',
-        'tzlocal',
-    ],
 )
