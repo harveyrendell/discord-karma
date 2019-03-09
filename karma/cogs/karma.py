@@ -42,10 +42,20 @@ class Karma:
     async def top(self, ctx, count=3):
         logger.info("Command invoked: top | {}".format(count))
         await self.bot.send_typing(ctx.message.channel)
+        await self._send_karma_list(ctx, count, reverse=True)
 
+
+    @commands.command(name='bot', pass_context=True, help='Get X users with the least karma.')
+    async def bottom(self, ctx, count=3):
+        logger.info("Command invoked: bot | {}".format(count))
+        await self.bot.send_typing(ctx.message.channel)
+        await self._send_karma_list(ctx, count, reverse=False)
+
+
+    async def _send_karma_list(self, ctx, count, reverse):
         server = ctx.message.server
         result = db.get_all_karma()
-        sorted_karma = sorted(result, key=lambda k: k.karma, reverse=True)
+        sorted_karma = sorted(result, key=lambda k: k.karma, reverse=reverse)
         response = karma_summary(sorted_karma, server, count=count)
 
         await self.bot.say(embed=response)
