@@ -41,13 +41,15 @@ def test_find_no_karma_in_invalid_message(invalid_input):
     karma_message = message.Message(sent_message)
     assert not karma_message.grants_karma()
 
+mock_author = discord.User(id='9876543210')
 
 @pytest.fixture
 @mock.patch('karma.message.db.update_karma', return_value=mock.Mock(karma=0))
 def send_karma_message(mock_db, content):
     sent_message = discord.Message(content=content, reactions=[])
     karma_msg = message.Message(sent_message)
-    karma_msg.process_karma()
+    with mock.patch('karma.message.db.add_karma_event', return_value=None):
+        karma_msg.process_karma(mock_author)
     return mock_db
 
 
@@ -95,7 +97,8 @@ def test_process_limits_negative_karma(set_max_karma_change, send_karma_message)
 def test_process_karma_produces_correct_output_for_increase(mock_update_function):
     sent_message = discord.Message(content='<@0123456789> ++', reactions=[])
     karma_message = message.Message(sent_message)
-    response = karma_message.process_karma()
+    with mock.patch('karma.message.db.add_karma_event', return_value=None):
+        response = karma_message.process_karma(mock_author)
 
     assert mock_update_function.called
     assert response == "<@0123456789>'s karma has increased to 23"
@@ -105,7 +108,8 @@ def test_process_karma_produces_correct_output_for_increase(mock_update_function
 def test_process_karma_produces_correct_output_for_decrease(mock_update_function):
     sent_message = discord.Message(content='<@9876543210> --', reactions=[])
     karma_message = message.Message(sent_message)
-    response = karma_message.process_karma()
+    with mock.patch('karma.message.db.add_karma_event', return_value=None):
+        response = karma_message.process_karma(mock_author)
 
     assert mock_update_function.called
     assert response == "<@9876543210>'s karma has decreased to -14"
