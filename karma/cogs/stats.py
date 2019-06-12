@@ -51,9 +51,9 @@ class Stats(commands.Cog):
                 else:
                     await ctx.send(err)
             else:
-                await ctx.send('Could not find user: {}'.format(key))
+                await ctx.send('Could not find user: {}'.format(uid2))
         else:
-            await ctx.send('Could not find user: {}'.format(key))
+            await ctx.send('Could not find user: {}'.format(uid1))
 
     @commands.command(pass_context=True, help='Get stats for the server, or mention a user for specifics.\nValid types are {}'.format(valid_types))
     async def stats(self, ctx, type, *args):
