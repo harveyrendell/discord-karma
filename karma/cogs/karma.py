@@ -7,12 +7,12 @@ from karma import logger as logger
 import karma.database as db
 
 
-class Karma:
+class Karma(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
     @commands.command(help='Get karma for specified users.')
-    async def get(self, *args):
+    async def get(self, ctx, *args):
         logger.info("Command invoked: get | {}".format(*args))
         pattern = re.compile(r'<@!?(?P<user_id>\d+)>')
 
@@ -20,48 +20,48 @@ class Karma:
             match = pattern.search(key)
             if match:
                 entry = db.get_karma(match.group('user_id'))
-                await self.bot.say('<@%s> has %d total karma' % (entry.discord_id, entry.karma))
+                await ctx.send('<@%s> has %d total karma' % (entry.discord_id, entry.karma))
             else:
-                await self.bot.say('Could not find user: {}'.format(key))
+                await ctx.send('Could not find user: {}'.format(key))
 
 
-    @commands.command(pass_context=True, help='Get karma for all users.')
+    @commands.command(help='Get karma for all users.')
     async def all(self, ctx):
+        await ctx.channel.trigger_typing()
         logger.info("Command invoked: all")
-        await self.bot.send_typing(ctx.message.channel)
 
-        server = ctx.message.server
+        guild = ctx.guild
         result = db.get_all_karma()
         sorted_karma = sorted(result, key=lambda k: k.karma, reverse=True)
-        response = karma_summary(sorted_karma, server)
+        response = karma_summary(sorted_karma, guild)
 
-        await self.bot.say(embed=response)
+        await ctx.send(embed=response)
 
 
-    @commands.command(pass_context=True, help='Get X users with the most karma.')
+    @commands.command(help='Get X users with the most karma.')
     async def top(self, ctx, count=3):
+        await ctx.channel.trigger_typing()
         logger.info("Command invoked: top | {}".format(count))
-        await self.bot.send_typing(ctx.message.channel)
         await self._send_karma_list(ctx, count, reverse=True)
 
 
-    @commands.command(name='bot', pass_context=True, help='Get X users with the least karma.')
+    @commands.command(name='bot', help='Get X users with the least karma.')
     async def bottom(self, ctx, count=3):
+        await ctx.channel.trigger_typing()
         logger.info("Command invoked: bot | {}".format(count))
-        await self.bot.send_typing(ctx.message.channel)
         await self._send_karma_list(ctx, count, reverse=False)
 
 
     async def _send_karma_list(self, ctx, count, reverse):
-        server = ctx.message.server
+        guild = ctx.guild
         result = db.get_all_karma()
         sorted_karma = sorted(result, key=lambda k: k.karma, reverse=reverse)
-        response = karma_summary(sorted_karma, server, count=count)
+        response = karma_summary(sorted_karma, guild, count=count)
 
-        await self.bot.say(embed=response)
+        await ctx.send(embed=response)
 
 
-def karma_summary(items, server, count=None):
+def karma_summary(items, guild, count=None):
     if not count:
         count = len(items)
     items = items[:count]  # trim list if requested
@@ -69,14 +69,14 @@ def karma_summary(items, server, count=None):
     user_list = []
 
     for pos, user in enumerate(items, start=1):
-        member = server.get_member(user.discord_id)
+        member = guild.get_member(int(user.discord_id))
         if member:
             logger.info("Found member: {} ({})".format(member.name, member.id))
-            line = '({}) **{:24}**'.format(
-                    user.karma,
-                    member.name
-            )
-            user_list.append(line)
+        line = '({}) **{:24}**'.format(
+                user.karma,
+                member.name if member != None else 'Unknown User :ghost:'
+        )
+        user_list.append(line)
 
     output = discord.Embed(
             title='Karma Summary',

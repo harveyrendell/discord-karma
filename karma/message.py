@@ -29,7 +29,7 @@ class Message():
             if change_type == '-':
                 mod = mod * -1
 
-            if self.message.author.id == match.group('user_id'):
+            if self.message.author.id == int(match.group('user_id')):
                 return "Don't be a weasel!" if change_type == '+' else "Don't be so hard on yourself."
 
             user_id = match.group('user_id')

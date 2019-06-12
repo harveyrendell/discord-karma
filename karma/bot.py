@@ -21,6 +21,7 @@ extensions = [
     'karma.cogs.karma',
     'karma.cogs.util',
     'karma.cogs.events',
+    'karma.cogs.stats'
 ]
 
 @bot.event
@@ -41,11 +42,11 @@ async def on_message(message):
 
     input = Message(message)
     if input.grants_karma():
-        if message.server is None:
+        if message.guild is None:
             PM_ERROR_RESPONSE = "You know I can't do that. :wink:"
-            return await bot.send_message(message.channel, PM_ERROR_RESPONSE)
+            return await message.channel.send(PM_ERROR_RESPONSE)
         response = input.process_karma(message.author)
-        return await bot.send_message(message.channel, response)
+        return await message.channel.send(response)
 
     await bot.process_commands(message)  # check if a command was called
 

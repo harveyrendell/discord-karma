@@ -16,13 +16,13 @@ from karma import logger as logger
 
 # collection of users to interact
 community = [
-    '174776038478446592',
-    '484012271916548109',
-    '474801853553442837',
-    '397263385202393099',
-    '491368352682344469',
-    '489470624243253259',
-    '491141794122432513'
+    174776038478446592,
+    484012271916548109,
+    474801853553442837,
+    397263385202393099,
+    491368352682344469,
+    489470624243253259,
+    491141794122432513
 ]
 
 # collection of messages to randomly use
@@ -37,8 +37,16 @@ messages = [
     "repost from animemes but better the second time"
 ]
 
-server = discord.Server(id="330444403044909067")
-channel = discord.Channel(server=server, id="553786725626019840")
+class DummyMessage:
+    def __init__(self, person, giver):
+        self.content = '{} <@{}>++'.format(random.choice(messages), person)
+        self.channel = self.DummyId(553786725626019840)
+        self.guild = self.DummyId(330444403044909067)
+        self.author = self.DummyId(giver)
+
+    class DummyId:
+        def __init__(self, id):
+            self.id = id
 
 def get_votes():
     roll = random.random()
@@ -70,13 +78,7 @@ def main():
                 without = list(community)
                 without.remove(person)
                 giver = random.choice(without)
-                message = discord.Message(
-                    content='{} <@{}>++'.format(random.choice(messages), person),
-                    channel=channel,
-                    server=server,
-                    author={"id": giver},
-                    reactions=[]
-                )
+                message = DummyMessage(person, giver)
                 db.update_karma(person, 1)
                 db.add_karma_event(
                     message,
