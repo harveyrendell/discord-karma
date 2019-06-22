@@ -23,16 +23,16 @@ class Events(commands.Cog):
             guild = self.bot.get_guild(int(event.guild_id))
             giver_user = guild.get_member(int(event.given_by))
             receiver_user = guild.get_member(int(event.user_id))
-            giver_avatar_url = giver_user.avatar_url or giver_user.default_avatar_url if giver_user != None else None
-            receiver_avatar_url = receiver_user.avatar_url or receiver_user.default_avatar_url if receiver_user != None else None
+            giver_avatar_url = giver_user.avatar_url or giver_user.default_avatar_url if giver_user else None
+            receiver_avatar_url = receiver_user.avatar_url or receiver_user.default_avatar_url if receiver_user else None
             embed = discord.Embed(
                 timestamp = Timing.timezone.localize(datetime.fromtimestamp(float(event.timestamp))),
                 colour=discord.Colour.purple(),
                 description=event.message,
             )
 
-            footer_text = 'Given by {}'.format(giver_user.display_name if giver_user != None else 'Unknown User')
-            if giver_avatar_url != None:
+            footer_text = 'Given by {}'.format(giver_user.display_name if giver_user else 'Unknown User')
+            if giver_avatar_url:
                 embed.set_footer(
                     text=footer_text,
                     icon_url=giver_avatar_url

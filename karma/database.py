@@ -38,22 +38,22 @@ def get_karma_given_raw(uid):
             all()
 
 def get_karma_given_total(uid, raw_events=None):
-    if raw_events == None:
+    if !raw_events:
         raw_events = get_karma_given_raw(uid)
     return get_karma_total_from_events(raw_events)
 
 def get_karma_given_dates(uid, raw_events=None):
-    if raw_events == None:
+    if !raw_events:
         raw_events = get_karma_given_raw(uid)
     return get_date_range_from_events(raw_events)
 
 def get_karma_given_breakdown(uid, raw_events=None):
-    if raw_events == None:
+    if !raw_events:
         raw_events = get_karma_given_raw(uid)
     return get_karma_breakdown_from_events(raw_events, "user_id");
 
 def get_karma_positive_impact(uid, given_breakdown=None):
-    if given_breakdown == None:
+    if !given_breakdown:
         given_breakdown = get_karma_given_breakdown(uid)
     return list(filter(lambda ele: ele["totals"]["positive"] > ele["totals"]["negative"], given_breakdown))
 
@@ -68,17 +68,17 @@ def get_karma_received_raw(uid):
             all()
 
 def get_karma_received_total(uid, raw_events=None):
-    if raw_events == None:
+    if !raw_events:
         raw_events = get_karma_received_raw(uid)
     return get_karma_total_from_events(raw_events)
 
 def get_karma_received_dates(uid, raw_events=None):
-    if raw_events == None:
+    if !raw_events:
         raw_events = get_karma_received_raw(uid)
     return get_date_range_from_events(raw_events)
 
 def get_karma_received_breakdown(uid, raw_events=None):
-    if raw_events == None:
+    if !raw_events:
         raw_events = get_karma_received_raw(uid)
     return get_karma_breakdown_from_events(raw_events, "given_by");
 

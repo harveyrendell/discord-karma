@@ -70,7 +70,7 @@ def karma_summary(items, guild, count=None):
             logger.info("Found member: {} ({})".format(member.name, member.id))
         line = '({}) **{:24}**'.format(
                 user.karma,
-                member.name if member != None else 'Unknown User :ghost:'
+                member.name if member else 'Unknown User :ghost:'
         )
         user_list.append(line)
 
