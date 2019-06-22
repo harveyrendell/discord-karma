@@ -1,5 +1,6 @@
 import re
 import io
+import asyncio
 
 import logging
 import discord
@@ -32,7 +33,7 @@ class Stats(commands.Cog):
     @commands.command(pass_context=True, help='Get the BFF score for two users (Person 1 -> Person 2).')
     async def bff(self, ctx, uid1, uid2):
 
-        await ctx.channel.trigger_typing()
+        typing_task = asyncio.ensure_future(ctx.channel.trigger_typing())
         logger.info("Command invoked: bff")
 
         guild = ctx.guild
@@ -43,33 +44,33 @@ class Stats(commands.Cog):
             if match_other and guild.get_member(int(match_other.group('user_id'))):
                 bff, bff_score, err = calculate_bff(match.group('user_id'), uid_to_calculate=match_other.group('user_id'))
                 if err == None:
-                     await ctx.send("The BFF score for **{}** with **{}** is **{:.2f}**. Wow! :sparkling_heart:".format(
+                     await send_response("The BFF score for **{}** with **{}** is **{:.2f}**. Wow! :sparkling_heart:".format(
                          get_username(match.group('user_id'), guild),
                          get_username(match_other.group('user_id'), guild),
                          bff_score
-                     ))
+                     ), ctx, typing_task)
                 else:
-                    await ctx.send(err)
+                    await send_response(err, ctx, typing_task)
             else:
-                await ctx.send('Could not find user: {}'.format(uid2))
+                await send_response('Could not find user: {}'.format(uid2), ctx, typing_task)
         else:
-            await ctx.send('Could not find user: {}'.format(uid1))
+            await send_response('Could not find user: {}'.format(uid1), ctx, typing_task)
 
     @commands.command(pass_context=True, help='Get stats for the server, or mention a user for specifics.\nValid types are {}'.format(valid_types))
-    async def stats(self, ctx, type, *args):
-        await ctx.channel.trigger_typing()
+    async def stats(self, ctx, type='all', *args):
+        typing_task = asyncio.ensure_future(ctx.channel.trigger_typing())
         guild = ctx.guild
 
         if type not in valid_types:
-            await ctx.send('Invalid stats type *{}*, valid types are {}'.format(type, valid_types))
+            await send_response('Invalid stats type *{}*, valid types are {}'.format(type, valid_types), ctx, typing_task)
         else:
             if not args:
                 logger.info("Command invoked: stats (server)")
                 response, file = get_karma_breakdown_server(type, guild)
                 if response == None:
-                    await ctx.send("Nobody has received any karma, so no stats can be provided".format(key))
+                    await send_response("Nobody has received any karma, so no stats can be provided".format(key), ctx, typing_task)
                 else:
-                    await ctx.send(file=file, embed=response)
+                    await send_embed(response, file, ctx, typing_task)
             else:
                 logger.info("Command invoked: stats (user) | {} {}".format(type, *args))
                 for key in args:
@@ -78,11 +79,19 @@ class Stats(commands.Cog):
                     if match and guild.get_member(int(match.group('user_id'))):
                         response, file = get_karma_breakdown_user(match.group('user_id'), type, guild)
                         if response == None:
-                            await ctx.send("User {} hasn't received any karma, so no stats can be provided".format(key))
+                            await send_response("User {} hasn't received any karma, so no stats can be provided".format(key), ctx, typing_task)
                         else:
-                            await ctx.send(file=file, embed=response)
+                            await send_embed(response, file)
                     else:
-                        await ctx.send('Could not find user: {}'.format(key))
+                        await send_response('Could not find user: {}'.format(key), ctx, typing_task)
+
+async def send_response(response, ctx, typing_task):
+    await typing_task
+    await ctx.send(response)
+
+async def send_embed(embed, file, ctx, typing_task):
+    await typing_task
+    await ctx.send(file=file, embed=embed)
 
 def build_ranking(list, direction, guild, max_value=3):
     result = ""

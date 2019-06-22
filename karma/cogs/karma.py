@@ -1,4 +1,5 @@
 import re
+import asyncio
 import discord
 from discord.ext import commands
 import math
@@ -27,7 +28,7 @@ class Karma(commands.Cog):
 
     @commands.command(help='Get karma for all users.')
     async def all(self, ctx):
-        await ctx.channel.trigger_typing()
+        typing_task = asyncio.ensure_future(ctx.channel.trigger_typing())
         logger.info("Command invoked: all")
 
         guild = ctx.guild
@@ -35,23 +36,25 @@ class Karma(commands.Cog):
         sorted_karma = sorted(result, key=lambda k: k.karma, reverse=True)
         response = karma_summary(sorted_karma, guild)
 
+        await typing_task
         await ctx.send(embed=response)
 
 
     @commands.command(help='Get X users with the most karma.')
     async def top(self, ctx, count=3):
-        await ctx.channel.trigger_typing()
+        typing_task = asyncio.ensure_future(ctx.channel.trigger_typing())
         logger.info("Command invoked: top | {}".format(count))
-        await self._send_karma_list(ctx, count, reverse=True)
+        response = self._send_karma_list(ctx, count, reverse=True)
 
+        await typing_task
+        await ctx.send(embed=response)
 
     async def _send_karma_list(self, ctx, count, reverse):
         guild = ctx.guild
         result = db.get_all_karma()
         sorted_karma = sorted(result, key=lambda k: k.karma, reverse=reverse)
-        response = karma_summary(sorted_karma, guild, count=count)
 
-        await ctx.send(embed=response)
+        return karma_summary(sorted_karma, guild, count=count)
 
 
 def karma_summary(items, guild, count=None):
