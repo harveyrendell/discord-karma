@@ -45,13 +45,6 @@ class Karma(commands.Cog):
         await self._send_karma_list(ctx, count, reverse=True)
 
 
-    @commands.command(name='bot', help='Get X users with the least karma.')
-    async def bottom(self, ctx, count=3):
-        await ctx.channel.trigger_typing()
-        logger.info("Command invoked: bot | {}".format(count))
-        await self._send_karma_list(ctx, count, reverse=False)
-
-
     async def _send_karma_list(self, ctx, count, reverse):
         guild = ctx.guild
         result = db.get_all_karma()
