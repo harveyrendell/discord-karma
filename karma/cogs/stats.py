@@ -43,7 +43,7 @@ class Stats(commands.Cog):
             match_other = pattern.search(uid2)
             if match_other and guild.get_member(int(match_other.group('user_id'))):
                 bff, bff_score, err = calculate_bff(match.group('user_id'), uid_to_calculate=match_other.group('user_id'))
-                if !err:
+                if not err:
                      await send_response("The BFF score for **{}** with **{}** is **{:.2f}**. Wow! :sparkling_heart:".format(
                          get_username(match.group('user_id'), guild),
                          get_username(match_other.group('user_id'), guild),
@@ -67,7 +67,7 @@ class Stats(commands.Cog):
             if not args:
                 logger.info("Command invoked: stats (server)")
                 response, file = get_karma_breakdown_server(type, guild)
-                if !response:
+                if not response:
                     await send_response("Nobody has received any karma, so no stats can be provided".format(key), ctx, typing_task)
                 else:
                     await send_embed(response, file, ctx, typing_task)
@@ -78,7 +78,7 @@ class Stats(commands.Cog):
                     match = pattern.search(key)
                     if match and guild.get_member(int(match.group('user_id'))):
                         response, file = get_karma_breakdown_user(match.group('user_id'), type, guild)
-                        if !response:
+                        if not response:
                             await send_response("User {} hasn't received any karma, so no stats can be provided".format(key), ctx, typing_task)
                         else:
                             await send_embed(response, file)
@@ -310,7 +310,7 @@ def get_karma_breakdown_server(type, guild):
         for karma in karma_list:
             name = get_username(karma.discord_id, guild)
             bff, bff_score, err = calculate_bff(karma.discord_id, given_breakdown_cache, positive_impact_cache)
-            if !err:
+            if not err:
                 if bff_score > top_friend_score:
                     top_friend = name
                     top_friend_score = bff_score
@@ -574,9 +574,9 @@ def generate_graph(users_to_map, title, show_legend=False):
 
 def calculate_bff(uid, given_cache=None, positive_impact_cache=None, uid_to_calculate=None):
     # First, get a list of people you have positively impacted
-    if !given_cache:
+    if not given_cache:
         given_cache = {}
-    if !positive_impact_cache:
+    if not positive_impact_cache:
         positive_impact_cache = {}
 
     if uid not in given_cache:
@@ -587,7 +587,7 @@ def calculate_bff(uid, given_cache=None, positive_impact_cache=None, uid_to_calc
     # If this list is empty, slam them for being rood
     if not positive_impact_cache[uid]:
         return None, 0, "Sorry, your BFF score can't be calculated as {} positively impacted anyone's karma.".format(
-            "you haven't" if !uid_to_calculate else "the first user hasn't"
+            "you haven't" if not uid_to_calculate else "the first user hasn't"
         )
 
     uid_sum = sum([(user["totals"]["positive"] - user["totals"]["negative"]) for user in positive_impact_cache[uid]])
@@ -595,7 +595,7 @@ def calculate_bff(uid, given_cache=None, positive_impact_cache=None, uid_to_calc
     if uid_to_calculate:
         # Calculating for a specific user
         user_impact = next((user for user in positive_impact_cache[uid] if user["discord_id"] == uid_to_calculate), None)
-        if !user_impact:
+        if not user_impact:
             # You haven't impacted them
             return None, 0, "Sorry, your BFF score can't be calculated, as you haven't positively impacted the other user."
 
@@ -606,7 +606,7 @@ def calculate_bff(uid, given_cache=None, positive_impact_cache=None, uid_to_calc
             return None, 0, "Sorry, your BFF score can't be calculated, as the other user hasn't positively impacted anyone's karma."
 
         user_impact_you = next((user for user in user_positive if user["discord_id"] == uid), None)
-        if !user_impact_you:
+        if not user_impact_you:
             return None, 0, "Sorry, your BFF score can't be calculated, as the other user hasn't positively impacted you."
         else:
             # Nuke everyone else from the positive_impact_cache for the next loop
