@@ -37,16 +37,16 @@ messages = [
     "repost from animemes but better the second time"
 ]
 
-class DummyMessage:
+class MockMessage:
     def __init__(self, person, giver):
         self.content = f'{random.choice(messages)} <@{person}>++'
-        self.channel = self.DummyId(553786725626019840)
-        self.guild = self.DummyId(330444403044909067)
-        self.author = self.DummyId(giver)
+        self.channel = MockId(553786725626019840)
+        self.guild = MockId(330444403044909067)
+        self.author = MockId(giver)
 
-    class DummyId:
-        def __init__(self, id):
-            self.id = id
+class MockId:
+    def __init__(self, id):
+        self.id = id
 
 def get_votes():
     roll = random.random()
@@ -78,7 +78,7 @@ def main():
                 without = list(community)
                 without.remove(person)
                 giver = random.choice(without)
-                message = DummyMessage(person, giver)
+                message = MockMessage(person, giver)
                 db.update_karma(person, 1)
                 db.add_karma_event(
                     message,
