@@ -10,6 +10,7 @@ import matplotlib.pyplot as plt
 from discord.ext import commands
 
 import karma.database as db
+import karma.statshelper as sh
 
 logger = logging.getLogger(__name__)
 
@@ -133,19 +134,19 @@ def get_karma_breakdown_server(command_type, guild):
         raw[uid]["received"] = received
 
         breakdowns[uid]= {}
-        breakdowns[uid]["given"] = db.get_karma_given_breakdown(uid, given)
-        breakdowns[uid]["received"] = db.get_karma_received_breakdown(uid, received)
+        breakdowns[uid]["given"] = sh.get_karma_given_breakdown(uid, given)
+        breakdowns[uid]["received"] = sh.get_karma_received_breakdown(uid, received)
 
         dates[uid] = {}
-        dates[uid]["given"] = db.get_karma_given_dates(uid, given)
-        dates[uid]["received"] = db.get_karma_given_dates(uid, received)
+        dates[uid]["given"] = sh.get_karma_given_dates(uid, given)
+        dates[uid]["received"] = sh.get_karma_given_dates(uid, received)
 
     # This code is a copy pasta of part of what is in the user break, so really they should be merged
 
     # Get for each current karma user how much they've given and taken away
     karma_users_given_totals = [ {
             "discord_id" : karma.discord_id,
-            "totals" : db.get_karma_given_total(karma.discord_id)
+            "totals" : sh.get_karma_given_total(karma.discord_id)
         } for karma in karma_list ]
     karma_users_given_totals_nice = sorted(karma_users_given_totals, key=lambda user : user["totals"]["positive"], reverse=True)
     karma_users_given_totals_bulli = sorted(karma_users_given_totals, key=lambda user : user["totals"]["negative"], reverse=True)
@@ -153,7 +154,7 @@ def get_karma_breakdown_server(command_type, guild):
     # Get for each current karma user how much they've received and had removed
     karma_users_received_totals = [ {
             "discord_id" : karma.discord_id,
-            "totals" : db.get_karma_received_total(karma.discord_id)
+            "totals" : sh.get_karma_received_total(karma.discord_id)
         } for karma in karma_list ]
     karma_users_received_totals_nice = sorted(karma_users_received_totals, key=lambda user : user["totals"]["positive"], reverse=True)
     karma_users_received_totals_bulli = sorted(karma_users_received_totals, key=lambda user : user["totals"]["negative"], reverse=True)
@@ -366,8 +367,8 @@ def get_karma_breakdown_user(uid, command_type, guild):
         return None, None
 
     # Get the breakdown of who + and -d your karma
-    given_breakdown = db.get_karma_given_breakdown(uid, given_raw)
-    received_breakdown = db.get_karma_received_breakdown(uid, received_raw)
+    given_breakdown = sh.get_karma_given_breakdown(uid, given_raw)
+    received_breakdown = sh.get_karma_received_breakdown(uid, received_raw)
 
     # Order the breakdowns
     given_breakdown_nice = sorted(given_breakdown, key=lambda user: user["totals"]["positive"], reverse=True)
@@ -377,7 +378,7 @@ def get_karma_breakdown_user(uid, command_type, guild):
     received_breakdown_bulli = sorted(received_breakdown, key=lambda user: user["totals"]["negative"], reverse=True)
 
     # Net gained and lost per day, on the days you received karma
-    received_dates = db.get_karma_received_dates(uid, received_raw)
+    received_dates = sh.get_karma_received_dates(uid, received_raw)
 
     # Get all the karma to figure out an overall ranking
     karma_list = db.get_all_karma()
@@ -388,7 +389,7 @@ def get_karma_breakdown_user(uid, command_type, guild):
     # Get for each current karma user how much they've given and taken away
     karma_users_given_totals = [ {
             "discord_id" : karma.discord_id,
-            "totals" : db.get_karma_given_total(karma.discord_id)
+            "totals" : sh.get_karma_given_total(karma.discord_id)
         } for karma in karma_list ]
     karma_users_given_totals_nice = sorted(karma_users_given_totals, key=lambda user : user["totals"]["positive"], reverse=True)
     karma_users_given_totals_bulli = sorted(karma_users_given_totals, key=lambda user : user["totals"]["negative"], reverse=True)
@@ -399,7 +400,7 @@ def get_karma_breakdown_user(uid, command_type, guild):
     # Get for each current karma user how much they've received and had removed
     karma_users_received_totals = [ {
             "discord_id" : karma.discord_id,
-            "totals" : db.get_karma_received_total(karma.discord_id)
+            "totals" : sh.get_karma_received_total(karma.discord_id)
         } for karma in karma_list ]
     karma_users_received_totals_nice = sorted(karma_users_received_totals, key=lambda user : user["totals"]["positive"], reverse=True)
     karma_users_received_totals_bulli = sorted(karma_users_received_totals, key=lambda user : user["totals"]["negative"], reverse=True)
@@ -572,9 +573,9 @@ def calculate_bff(uid, given_cache=None, positive_impact_cache=None, uid_to_calc
         positive_impact_cache = {}
 
     if uid not in given_cache:
-        given_cache[uid] = db.get_karma_given_breakdown(uid)
+        given_cache[uid] = sh.get_karma_given_breakdown(uid)
     if uid not in positive_impact_cache:
-        positive_impact_cache[uid] = db.get_karma_positive_impact(uid, given_cache[uid])
+        positive_impact_cache[uid] = sh.get_karma_positive_impact(uid, given_cache[uid])
 
     # If this list is empty, slam them for being rood
     if not positive_impact_cache[uid]:
@@ -591,8 +592,8 @@ def calculate_bff(uid, given_cache=None, positive_impact_cache=None, uid_to_calc
             # You haven't impacted them
             return None, 0, "Sorry, your BFF score can't be calculated, as you haven't positively impacted the other user."
 
-        user_given = db.get_karma_given_breakdown(uid_to_calculate)
-        user_positive =  db.get_karma_positive_impact(uid_to_calculate, user_given)
+        user_given = sh.get_karma_given_breakdown(uid_to_calculate)
+        user_positive =  sh.get_karma_positive_impact(uid_to_calculate, user_given)
 
         if not user_positive:
             return None, 0, "Sorry, your BFF score can't be calculated, as the other user hasn't positively impacted anyone's karma."
@@ -609,9 +610,9 @@ def calculate_bff(uid, given_cache=None, positive_impact_cache=None, uid_to_calc
 
     for user in positive_impact_cache[uid]:
         if user["discord_id"] not in given_cache:
-            given_cache[user["discord_id"]] = db.get_karma_given_breakdown(user["discord_id"])
+            given_cache[user["discord_id"]] = sh.get_karma_given_breakdown(user["discord_id"])
         if user["discord_id"] not in positive_impact_cache:
-            positive_impact_cache[user["discord_id"]] = db.get_karma_positive_impact(user["discord_id"], given_cache[user["discord_id"]])
+            positive_impact_cache[user["discord_id"]] = sh.get_karma_positive_impact(user["discord_id"], given_cache[user["discord_id"]])
 
         impact_uid = next((user for user in positive_impact_cache[user["discord_id"]] if user["discord_id"] == uid), None)
         if impact_uid:
