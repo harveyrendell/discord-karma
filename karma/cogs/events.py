@@ -31,7 +31,7 @@ class Events(commands.Cog):
                 description=event.message,
             )
 
-            footer_text = 'Given by {}'.format(giver_user.display_name if giver_user else 'Unknown User')
+            footer_text = f'Given by {giver_user.display_name if giver_user else "Unknown User"}'
             if giver_avatar_url:
                 embed.set_footer(
                     text=footer_text,

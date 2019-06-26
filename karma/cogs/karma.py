@@ -23,7 +23,7 @@ class Karma(commands.Cog):
                 entry = db.get_karma(match.group('user_id'))
                 await ctx.send('<@%s> has %d total karma' % (entry.discord_id, entry.karma))
             else:
-                await ctx.send('Could not find user: {}'.format(key))
+                await ctx.send(f'Could not find user: {key}')
 
 
     @commands.command(help='Get karma for all users.')
@@ -31,10 +31,9 @@ class Karma(commands.Cog):
         typing_task = asyncio.ensure_future(ctx.channel.trigger_typing())
         logger.info("Command invoked: all")
 
-        guild = ctx.guild
         result = db.get_all_karma()
         sorted_karma = sorted(result, key=lambda k: k.karma, reverse=True)
-        response = karma_summary(sorted_karma, guild)
+        response = karma_summary(sorted_karma, ctx.guild)
 
         await typing_task
         await ctx.send(embed=response)
@@ -43,18 +42,17 @@ class Karma(commands.Cog):
     @commands.command(help='Get X users with the most karma.')
     async def top(self, ctx, count=3):
         typing_task = asyncio.ensure_future(ctx.channel.trigger_typing())
-        logger.info("Command invoked: top | {}".format(count))
+        logger.info(f'Command invoked: top | {count}')
         response = self._send_karma_list(ctx, count, reverse=True)
 
         await typing_task
         await ctx.send(embed=response)
 
-    async def _send_karma_list(self, ctx, count, reverse):
-        guild = ctx.guild
+    def _send_karma_list(self, ctx, count, reverse):
         result = db.get_all_karma()
         sorted_karma = sorted(result, key=lambda k: k.karma, reverse=reverse)
 
-        return karma_summary(sorted_karma, guild, count=count)
+        return karma_summary(sorted_karma, ctx.guild, count=count)
 
 
 def karma_summary(items, guild, count=None):
@@ -67,7 +65,7 @@ def karma_summary(items, guild, count=None):
     for pos, user in enumerate(items, start=1):
         member = guild.get_member(int(user.discord_id))
         if member:
-            logger.info("Found member: {} ({})".format(member.name, member.id))
+            logger.info(f'Found member: {member.name} ({member.id})')
         line = '({}) **{:24}**'.format(
                 user.karma,
                 member.name if member else 'Unknown User :ghost:'

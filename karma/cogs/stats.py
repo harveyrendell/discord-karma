@@ -1,12 +1,18 @@
 import re
 import io
 import asyncio
+from itertools import accumulate
 
 import logging
 import discord
-
 import matplotlib
 import matplotlib.pyplot as plt
+from discord.ext import commands
+
+import karma.database as db
+
+logger = logging.getLogger(__name__)
+
 params = {
     "text.color" : "w",
     "ytick.color" : "w",
@@ -16,21 +22,13 @@ params = {
 }
 plt.rcParams.update(params)
 
-from discord.ext import commands
-
-from itertools import accumulate
-
-import karma.database as db
-
-logger = logging.getLogger(__name__)
-
 valid_types = ['all', 'given', 'received', 'bff', 'graph']
 
 class Stats(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
-    @commands.command(pass_context=True, help='Get the BFF score for two users (Person 1 -> Person 2).')
+    @commands.command(help='Get the BFF score for two users (Person 1 -> Person 2).')
     async def bff(self, ctx, uid1, uid2):
 
         typing_task = asyncio.ensure_future(ctx.channel.trigger_typing())
@@ -52,72 +50,66 @@ class Stats(commands.Cog):
                 else:
                     await send_response(err, ctx, typing_task)
             else:
-                await send_response('Could not find user: {}'.format(uid2), ctx, typing_task)
+                await send_response(f'Could not find user: {uid2}', ctx, typing_task)
         else:
-            await send_response('Could not find user: {}'.format(uid1), ctx, typing_task)
+            await send_response(f'Could not find user: {uid1}', ctx, typing_task)
 
-    @commands.command(pass_context=True, help='Get stats for the server, or mention a user for specifics.\nValid types are {}'.format(valid_types))
-    async def stats(self, ctx, type='all', *args):
+    @commands.command(help=f'Get stats for the server, or mention a user for specifics.\nValid types are {valid_types}')
+    async def stats(self, ctx, command_type='all', *args):
         typing_task = asyncio.ensure_future(ctx.channel.trigger_typing())
         guild = ctx.guild
 
-        if type not in valid_types:
-            await send_response('Invalid stats type *{}*, valid types are {}'.format(type, valid_types), ctx, typing_task)
-        else:
-            if not args:
-                logger.info("Command invoked: stats (server)")
-                response, file = get_karma_breakdown_server(type, guild)
-                if not response:
-                    await send_response("Nobody has received any karma, so no stats can be provided".format(key), ctx, typing_task)
-                else:
-                    await send_embed(response, file, ctx, typing_task)
+        if command_type not in valid_types:
+            return send_response(f'Invalid stats type *{command_type}*, valid types are {valid_types}', ctx, typing_task)
+
+        if not args:
+            logger.info("Command invoked: stats (server)")
+            response, image = get_karma_breakdown_server(command_type, guild)
+            if not response:
+                await send_response('Nobody has received any karma, so no stats can be provided', ctx, typing_task)
             else:
-                logger.info("Command invoked: stats (user) | {} {}".format(type, *args))
-                for key in args:
-                    pattern = re.compile(r'<@!?(?P<user_id>\d+)>')
-                    match = pattern.search(key)
-                    if match and guild.get_member(int(match.group('user_id'))):
-                        response, file = get_karma_breakdown_user(match.group('user_id'), type, guild)
-                        if not response:
-                            await send_response("User {} hasn't received any karma, so no stats can be provided".format(key), ctx, typing_task)
-                        else:
-                            await send_embed(response, file)
+                await send_embed(response, image, ctx, typing_task)
+        else:
+            logger.info("Command invoked: stats (user) | {} {}".format(command_type, *args))
+            for key in args:
+                pattern = re.compile(r'<@!?(?P<user_id>\d+)>')
+                match = pattern.search(key)
+                if match and guild.get_member(int(match.group('user_id'))):
+                    response, image = get_karma_breakdown_user(match.group('user_id'), command_type, guild)
+                    if not response:
+                        await send_response(f"User {key} hasn't received any karma, so no stats can be provided", ctx, typing_task)
                     else:
-                        await send_response('Could not find user: {}'.format(key), ctx, typing_task)
+                        await send_embed(response, image, ctx, typing_task)
+                else:
+                    await send_response(f'Could not find user: {key}', ctx, typing_task)
 
 async def send_response(response, ctx, typing_task):
     await typing_task
     await ctx.send(response)
 
-async def send_embed(embed, file, ctx, typing_task):
+async def send_embed(embed, image, ctx, typing_task):
     await typing_task
-    await ctx.send(file=file, embed=embed)
+    await ctx.send(file=image, embed=embed)
 
-def build_ranking(list, direction, guild, max_value=3):
-    result = ""
-    for i, user in enumerate(list):
-        if i >= max_value:
-            break;
-        result += "({}) **{}**\n".format(
-            user["totals"][direction],
-            get_username(user["discord_id"], guild)
-        )
-    return result if result != "" else "*No ranking available*"
+def build_ranking(users, direction, guild, count=3):
+    return '\n'.join([
+        f'({user["totals"][direction]}) **{get_username(user["discord_id"], guild)}**'
+        for user in users[:count]
+    ]) or '*No ranking available*'
 
-def build_relo_ranking(list, direction, guild, max_value=3):
+def build_relo_ranking(user_pairs, direction, guild, count=3):
     result = ""
     sign = "+" if direction == "positive" else "-"
-    for i, pair in enumerate(list):
-        if i >= max_value:
-            break;
-        result += "({}) **{}** -> **{}**\n".format(
-            sign + str(pair[1]["totals"][direction]),
-            get_username(pair[0], guild),
-            get_username(pair[1]["discord_id"], guild),
-        )
-    return result if result != "" else "*No ranking available*"
 
-def get_karma_breakdown_server(type, guild):
+    for user_pair in user_pairs[:count]:
+        result += "({}) **{}** -> **{}**\n".format(
+            sign + str(user_pair[1]["totals"][direction]),
+            get_username(user_pair[0], guild),
+            get_username(user_pair[1]["discord_id"], guild),
+        )
+    return result or "*No ranking available*"
+
+def get_karma_breakdown_server(command_type, guild):
     # Go and fetch every single person
     karma_list = db.get_all_karma()
 
@@ -180,20 +172,20 @@ def get_karma_breakdown_server(type, guild):
 
     # Ready to build ...
     output = discord.Embed(
-        title='Stats Summary for {}'.format(guild.name),
+        title=f'Stats Summary for {guild.name}',
         colour=discord.Colour.purple()
     )
     img_file = None
 
-    if (type in ['received', 'all']):
+    if (command_type in ['received', 'all']):
         top_score = get_username(sorted_karma[0].discord_id, guild);
         top_karma = sorted_karma[0].karma;
-        text = "The current top karma user is **{}**, with **{}** karma.".format(top_score, top_karma)
+        text = f'The current top karma user is **{top_score}**, with **{top_karma}** karma.'
         if len(sorted_karma) > 1:
             second_score = get_username(sorted_karma[1].discord_id, guild)
             second_karma = sorted_karma[1].karma
             diff = top_karma - second_karma
-            text += " **{}** is **{}** karma behind them, with **{}** karma.".format(second_score, diff, second_karma)
+            text += f' **{second_score}** is **{diff}** karma behind them, with **{second_karma}** karma.'
 
         output.add_field(
             name='Karma Collector :crown:',
@@ -222,7 +214,7 @@ def get_karma_breakdown_server(type, guild):
             inline=False
         )
 
-    if (type in ['given', 'all']):
+    if (command_type in ['given', 'all']):
 
         total_given_positive = 0
         total_given_negative = 0
@@ -296,7 +288,7 @@ def get_karma_breakdown_server(type, guild):
             inline=True
         )
 
-    if (type in ['bff', 'all']):
+    if (command_type in ['bff', 'all']):
         # Get all BFFs
         # Not transitive so we have to do it this way
         top_friend = None
@@ -326,7 +318,7 @@ def get_karma_breakdown_server(type, guild):
             inline=False
         )
 
-    if (type in ['graph', 'all']):
+    if (command_type in ['graph', 'all']):
         graph_points = []
         karma_days = {}
 
@@ -354,7 +346,7 @@ def get_karma_breakdown_server(type, guild):
 
         output.add_field(
             name='Karma Chart :bar_chart:',
-            value="Below is a graph of the karma over time for the server. The day with the biggest karma change was **{}** with **{}** karma +/-".format(max_day, max_amount),
+            value=f'Below is a graph of the karma over time for the server. The day with the biggest karma change was **{max_day}** with **{max_amount}** karma +/-',
             inline=False
         )
 
@@ -364,7 +356,7 @@ def get_username(uid, guild):
     user = guild.get_member(int(uid))
     return user.name if user else 'Unknown User :ghost:'
 
-def get_karma_breakdown_user(uid, type, guild):
+def get_karma_breakdown_user(uid, command_type, guild):
     me = guild.get_member(int(uid))
 
     given_raw = db.get_karma_given_raw(uid)
@@ -417,11 +409,11 @@ def get_karma_breakdown_user(uid, type, guild):
 
     # Ready to build ...
     output = discord.Embed(
-        title='Stats Summary for {}'.format(me.name),
+        title=f'Stats Summary for {me.name}',
         colour=discord.Colour.purple()
     )
 
-    if (type in ['received', 'all']):
+    if (command_type in ['received', 'all']):
         output.add_field(
             name='Karma Collector :crown:',
             value="You've gained **{} karma**, and lost **{} karma**, making for a total of **{} karma**, putting you at overall position **#{}**.".\
@@ -460,7 +452,7 @@ def get_karma_breakdown_user(uid, type, guild):
             inline=True
         )
 
-    if (type in ['given', 'all']):
+    if (command_type in ['given', 'all']):
         output.add_field(
             name='Karma Circulator :repeat:',
             value="You've given **{} karma**, and taken **{} karma**, making for a total of **{} +/- karma** distributed".\
@@ -475,13 +467,13 @@ def get_karma_breakdown_user(uid, type, guild):
 
         output.add_field(
             name='Karma Conferred :ok_woman: (karma given rank)',
-            value="Position: **#{}**".format(karma_users_given_totals_nice.index(given) + 1),
+            value=f'Position: **#{karma_users_given_totals_nice.index(given) + 1}**',
             inline=True
         )
 
         output.add_field(
             name='Karma Clobbered :no_good: (karma taken rank)',
-            value="Position: **#{}**".format(karma_users_given_totals_bulli.index(given) + 1),
+            value=f'Position: **#{karma_users_given_totals_bulli.index(given) + 1}**',
             inline=True
         )
 
@@ -501,7 +493,7 @@ def get_karma_breakdown_user(uid, type, guild):
         )
 
     img_file = None
-    if (type in ['bff', 'all']):
+    if (command_type in ['bff', 'all']):
         # Get BFF
         bff, bff_score, err = calculate_bff(uid, { uid : given_breakdown })
         output.add_field(
@@ -510,19 +502,19 @@ def get_karma_breakdown_user(uid, type, guild):
             inline=False
         )
 
-    if (type in ['graph', 'all']):
+    if (command_type in ['graph', 'all']):
         # Graph time
         x_coords, y_coords = zip(*((point["date"], point["diff"]["positive"] - point["diff"]["negative"]) for point in received_dates))
         max_karma = max(y_coords)
         accumulated = list(accumulate(y_coords))
 
-        buffer = generate_graph([(me, x_coords, accumulated)], 'Karma over time for {}'.format(me.name))
+        buffer = generate_graph([(me, x_coords, accumulated)], f'Karma over time for {me.name}')
         img_file = discord.File(buffer, filename="stats.png")
         output.set_image(url="attachment://stats.png")
 
         output.add_field(
             name='Karma Chart :bar_chart:',
-            value="Below is a graph of your karma over time." + ("" if max_karma <= 0 else " Your max karma earned on a day is **{}**. Wow!".format(max_karma)),
+            value='Below is a graph of your karma over time.' + ('' if max_karma <= 0 else f' Your max karma earned on a day is **{max_karma}**. Wow!'),
             inline=False
         )
 

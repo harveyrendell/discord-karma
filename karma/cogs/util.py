@@ -12,19 +12,19 @@ class Util(commands.Cog):
 
     @commands.command(help="Display the service uptime.")
     async def uptime(self, ctx):
-        logger.info("Command invoked - uptime")
+        logger.info('Command invoked - uptime')
 
         uptime = Timing.get_uptime_readable()
-        response = 'Uptime: {}'.format(uptime)
+        response = f'Uptime: {uptime}'
 
-        logger.info("Response - {}".format(response))
+        logger.info(f'Response - {response}')
         await ctx.send(response)
 
     @commands.command(help="Sync the karma events db with the actual karma scores.")
     async def sync(self, ctx):
-        logger.info("Command invoked - sync")
+        logger.info('Command invoked - sync')
         db.sync_karma()
-        await ctx.send("Sync complete!")
+        await ctx.send('Sync complete!')
 
 # The setup fucntion below is neccesarry. Remember we give bot.add_cog() the name of the class.
 # When we load the cog, we use the name of the file.

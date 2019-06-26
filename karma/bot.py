@@ -28,11 +28,11 @@ extensions = [
 async def on_ready():
     start_time = Timing.start()
 
-    logger.info('Logged in as {}'.format(bot.user.name))
+    logger.info(f'Logged in as {bot.user.name}')
     logger.info('--------')
-    logger.info('Karma Bot Version: {}'.format(karma.__version__))
-    logger.info('Current Discord.py Version: {} | Current Python Version: {}'.format(discord.__version__, platform.python_version()))
-    logger.info('Startup time: {}'.format(Timing.human_readable(start_time)))
+    logger.info(f'Karma Bot Version: {karma.__version__}')
+    logger.info(f'Current Discord.py Version: {discord.__version__} | Current Python Version: {platform.python_version()}')
+    logger.info(f'Startup time: {Timing.human_readable(start_time)}')
 
 
 @bot.event
@@ -67,7 +67,7 @@ if __name__ == "__main__":
         try:
             bot.load_extension(extension)
         except Exception as e:
-            logger.error('Failed to load extension {}'.format(extension))
+            logger.error(f'Failed to load extension {extension}')
             logger.error(e)
             raise(e)
     main()

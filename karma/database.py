@@ -33,9 +33,7 @@ def get_karma_given_raw(uid):
                 KarmaEvent.timestamp,
                 KarmaEvent.given_by,
                 KarmaEvent.user_id
-            ).filter_by(given_by=uid).\
-            order_by(KarmaEvent.timestamp).\
-            all()
+            ).filter_by(given_by=uid).order_by(KarmaEvent.timestamp).all()
 
 def get_karma_given_total(uid, raw_events=None):
     if not raw_events:
@@ -63,9 +61,7 @@ def get_karma_received_raw(uid):
                 KarmaEvent.timestamp,
                 KarmaEvent.given_by,
                 KarmaEvent.user_id
-            ).filter_by(user_id=uid).\
-            order_by(KarmaEvent.timestamp).\
-            all()
+            ).filter_by(user_id=uid).order_by(KarmaEvent.timestamp).all()
 
 def get_karma_received_total(uid, raw_events=None):
     if not raw_events:
@@ -205,7 +201,7 @@ def init(path='.'):
     global session
 
     db_path = os.path.join(path, 'karma.db')
-    engine = sql.create_engine('sqlite:///{}'.format(db_path))
+    engine = sql.create_engine(f'sqlite:///{db_path}')
     Base.metadata.create_all(engine)
     DBSession = sessionmaker(bind=engine)
     session = DBSession()

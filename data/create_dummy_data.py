@@ -39,7 +39,7 @@ messages = [
 
 class DummyMessage:
     def __init__(self, person, giver):
-        self.content = '{} <@{}>++'.format(random.choice(messages), person)
+        self.content = f'{random.choice(messages)} <@{person}>++'
         self.channel = self.DummyId(553786725626019840)
         self.guild = self.DummyId(330444403044909067)
         self.author = self.DummyId(giver)
@@ -86,9 +86,9 @@ def main():
                     1,
                     current_time.timestamp()
                 )
-            logger.info('Current person {} assigned {} karma at {}>'.format(person, todays_roll, current_time))
+            logger.info(f'Current person {person} assigned {todays_roll} karma at {current_time}')
         current_time += relativedelta(days=1)
-        logger.info('New time is {}'.format(current_time))
+        logger.info(f'New time is {current_time}')
 
 if __name__ == "__main__":
     main()
