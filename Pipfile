@@ -9,6 +9,3 @@ python-dateutil = "*"
 sqlalchemy = "*"
 tzlocal = "*"
 matplotlib = "*"
-
-[requires]
-python_version = "3.6"
