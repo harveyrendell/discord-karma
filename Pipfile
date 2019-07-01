@@ -2,11 +2,13 @@
 mock = "*"
 pylint = "*"
 pytest = "==3.6.3"
+python-dateutil = "*"
 
 [packages]
 "discord.py" = "*"
 sqlalchemy = "*"
 tzlocal = "*"
+matplotlib = "*"
 
 [requires]
 python_version = "3.6"

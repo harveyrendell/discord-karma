@@ -10,32 +10,37 @@ from karma.timing import Timing
 logger = logging.getLogger(__name__)
 
 
-class Events:
+class Events(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
-    @commands.command(pass_context=True, help="[DISABLED] Get all karma events.")
+    @commands.command(help="[DISABLED] Get all karma events.")
     async def get_events(self, ctx):
         return # Don't execute command
 
         events = db.get_all_karma_events()
         for event in events:
-            guild = self.bot.get_server(event.guild_id)
-            giver_user = guild.get_member(event.given_by) or 'Unknown User'
-            receiver_user = guild.get_member(event.user_id)
-            giver_avatar_url = giver_user.avatar_url or giver_user.default_avatar_url
-            receiver_avatar_url = receiver_user.avatar_url or receiver_user.default_avatar_url
-
+            guild = self.bot.get_guild(int(event.guild_id))
+            giver_user = guild.get_member(int(event.given_by))
+            receiver_user = guild.get_member(int(event.user_id))
+            giver_avatar_url = giver_user.avatar_url or giver_user.default_avatar_url if giver_user else None
+            receiver_avatar_url = receiver_user.avatar_url or receiver_user.default_avatar_url if receiver_user else None
             embed = discord.Embed(
                 timestamp = Timing.timezone.localize(datetime.fromtimestamp(float(event.timestamp))),
                 colour=discord.Colour.purple(),
                 description=event.message,
             )
-            embed.set_footer(
-                text=f'Given by {giver_user.display_name}',
-                icon_url=giver_avatar_url)
 
-            await self.bot.send_message(ctx.message.channel, embed=embed)
+            footer_text = f'Given by {giver_user.display_name if giver_user else "Unknown User"}'
+            if giver_avatar_url:
+                embed.set_footer(
+                    text=footer_text,
+                    icon_url=giver_avatar_url
+                )
+            else:
+                embed.set_footer(text=footer_text)
+
+            await ctx.send(embed=embed)
 
 
 # The setup function below is neccesarry. Remember we give bot.add_cog() the name of the class.

@@ -27,12 +27,7 @@ class Timing():
         hours, remainder = divmod(uptime.seconds, 3600)
         minutes, seconds = divmod(remainder, 60)
 
-        result = '{} Days, {} Hours, {} Minutes, {} Seconds'.format(
-            uptime.days,
-            hours,
-            minutes,
-            seconds
-        )
+        result = f'{uptime.days} Days, {hours} Hours, {minutes} Minutes, {seconds} Seconds'
         return result
 
     @classmethod

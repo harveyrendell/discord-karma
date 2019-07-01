@@ -4,9 +4,18 @@ import unittest
 
 from karma import message
 
-import discord
 import pytest
 
+# discord.py has broken mock instantiation, so these classes are used as id pull substitutes
+class MockMessage:
+    def __init__(self, content, author):
+        self.content = content
+        self.author = author
+class MockAuthor:
+    def __init__(self, id):
+        self.id = id
+
+mock_author = MockAuthor(id='9876543210')
 
 @pytest.mark.parametrize('valid_input', [
     '<@0123456789> ++',
@@ -18,7 +27,7 @@ import pytest
     'words on <@0123456789> ++ either side',
 ])
 def test_find_karma_in_valid_message(valid_input):
-    sent_message = discord.Message(content=valid_input, reactions=[])
+    sent_message = MockMessage(valid_input, mock_author)
     karma_message = message.Message(sent_message)
     assert karma_message.grants_karma()
 
@@ -37,17 +46,17 @@ def test_find_karma_in_valid_message(valid_input):
     '<@0123456789>         ++',
 ])
 def test_find_no_karma_in_invalid_message(invalid_input):
-    sent_message = discord.Message(content=invalid_input, reactions=[])
+    sent_message = MockMessage(invalid_input, mock_author)
     karma_message = message.Message(sent_message)
     assert not karma_message.grants_karma()
-
 
 @pytest.fixture
 @mock.patch('karma.message.db.update_karma', return_value=mock.Mock(karma=0))
 def send_karma_message(mock_db, content):
-    sent_message = discord.Message(content=content, reactions=[])
+    sent_message = MockMessage(content, mock_author)
     karma_msg = message.Message(sent_message)
-    karma_msg.process_karma()
+    with mock.patch('karma.message.db.add_karma_event', return_value=None):
+        karma_msg.process_karma(mock_author)
     return mock_db
 
 
@@ -93,9 +102,10 @@ def test_process_limits_negative_karma(set_max_karma_change, send_karma_message)
 
 @mock.patch('karma.message.db.update_karma', return_value=mock.Mock(karma=23))
 def test_process_karma_produces_correct_output_for_increase(mock_update_function):
-    sent_message = discord.Message(content='<@0123456789> ++', reactions=[])
+    sent_message = MockMessage('<@0123456789> ++', mock_author)
     karma_message = message.Message(sent_message)
-    response = karma_message.process_karma()
+    with mock.patch('karma.message.db.add_karma_event', return_value=None):
+        response = karma_message.process_karma(mock_author)
 
     assert mock_update_function.called
     assert response == "<@0123456789>'s karma has increased to 23"
@@ -103,9 +113,10 @@ def test_process_karma_produces_correct_output_for_increase(mock_update_function
 
 @mock.patch('karma.message.db.update_karma', return_value=mock.Mock(karma=-14))
 def test_process_karma_produces_correct_output_for_decrease(mock_update_function):
-    sent_message = discord.Message(content='<@9876543210> --', reactions=[])
+    sent_message = MockMessage('<@9876543210> --', mock_author)
     karma_message = message.Message(sent_message)
-    response = karma_message.process_karma()
+    with mock.patch('karma.message.db.add_karma_event', return_value=None):
+        response = karma_message.process_karma(mock_author)
 
     assert mock_update_function.called
     assert response == "<@9876543210>'s karma has decreased to -14"

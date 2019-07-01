@@ -29,14 +29,14 @@ class Message():
             if change_type == '-':
                 mod = mod * -1
 
-            if self.message.author.id == match.group('user_id'):
+            if self.message.author.id == int(match.group('user_id')):
                 return "Don't be a weasel!" if change_type == '+' else "Don't be so hard on yourself."
 
             user_id = match.group('user_id')
             entry = db.update_karma(user_id, mod)
             db.add_karma_event(self.message, user_id, mod)
             change = 'increased' if mod > 0 else 'decreased'
-            return "<@{}>'s karma has {} to {}".format(user_id, change, entry.karma)
+            return f"<@{user_id}>'s karma has {change} to {entry.karma}"
 
     def _find_karma(self):
         pattern = re.compile(r'<@!?(?P<user_id>\d+)>[\s]{0,2}(?P<mod>([+]{2,}|[-]{2,}))')
