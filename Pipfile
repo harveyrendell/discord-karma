@@ -8,4 +8,5 @@ python-dateutil = "*"
 "discord.py" = "*"
 sqlalchemy = "*"
 tzlocal = "*"
-matplotlib = "*"
+# Don't install as this takes ages on rpi
+# matplotlib = "*"
