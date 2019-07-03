@@ -3,7 +3,9 @@ FROM python:3.7-slim
 MAINTAINER hjrendell@gmail.com
 
 RUN apt-get update && \
-    apt-get install -y git
+    apt-get install -y \
+    build-essential \
+    git
 
 COPY . /app
 WORKDIR /app
