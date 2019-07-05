@@ -4,6 +4,8 @@ MAINTAINER hjrendell@gmail.com
 
 RUN apt-get update && \
     apt-get install -y \
+    software-properties-common \
+    libfreetype6-dev \
     build-essential \
     git
 
