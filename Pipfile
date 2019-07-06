@@ -8,4 +8,10 @@ python-dateutil = "*"
 "discord.py" = "*"
 sqlalchemy = "*"
 tzlocal = "*"
-matplotlib = "*"
+
+# armv7
+kiwisolver = { file = "https://www.piwheels.org/simple/kiwisolver/kiwisolver-1.1.0-cp37-cp37m-linux_armv7l.whl", platform_machine = "== 'armv7l'" }
+matplotlib-arm = { file = "https://www.piwheels.org/simple/matplotlib/matplotlib-3.1.0-cp37-cp37m-linux_armv7l.whl", platform_machine = "== 'armv7l'" }
+
+# x86_64
+matplotlib = { version = "*", platform_machine = "!= 'armv7l'" }
