@@ -4,10 +4,14 @@ MAINTAINER hjrendell@gmail.com
 
 RUN apt-get update && \
     apt-get install -y \
-    software-properties-common \
-    libfreetype6-dev \
-    build-essential \
-    git
+    libatlas-base-dev
+
+RUN if [ $(uname -m) = armv7l ]; then \
+        pip install \
+        https://www.piwheels.org/simple/kiwisolver/kiwisolver-1.1.0-cp37-cp37m-linux_armv7l.whl#sha256=0d4b2d089fb73faaac0dcc8ff5237a0aee075d65f1adbe94a0483772c9db1a3a \
+        https://www.piwheels.org/simple/matplotlib/matplotlib-3.1.0-cp37-cp37m-linux_armv7l.whl#sha256=46dcade5008d4a865afd2f781e44cfbac058c350c14ea474f5ea041ad752befd \
+    ; fi
+
 
 COPY . /app
 WORKDIR /app
