@@ -50,7 +50,7 @@ def get_or_create(uid):
     return object
 
 
-def add_karma_event(message, karma_user_id, karma_change, timestamp=timing.Timing().current_time().timestamp()):
+def add_karma_event(message, karma_user_id, karma_change, timestamp=None):
     row = KarmaEvent(
         user_id=karma_user_id,
         channel_id=str(message.channel.id),
@@ -58,7 +58,7 @@ def add_karma_event(message, karma_user_id, karma_change, timestamp=timing.Timin
         karma_change=karma_change,
         given_by=str(message.author.id),
         message=message.content,
-        timestamp=timestamp,
+        timestamp=timing.Timing().current_time().timestamp() if timestamp is None else timestamp,
     )
     session.add(row)
     session.commit()
