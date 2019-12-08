@@ -11,8 +11,9 @@ RUN pip install pipenv
 # Install from wheel on arm processors to avoid building from source
 RUN if [ $(uname -m) = armv7l ]; then \
         pip install \
-        https://www.piwheels.org/simple/kiwisolver/kiwisolver-1.1.0-cp37-cp37m-linux_armv7l.whl#sha256=0d4b2d089fb73faaac0dcc8ff5237a0aee075d65f1adbe94a0483772c9db1a3a \
-        https://www.piwheels.org/simple/matplotlib/matplotlib-3.1.0-cp37-cp37m-linux_armv7l.whl#sha256=46dcade5008d4a865afd2f781e44cfbac058c350c14ea474f5ea041ad752befd \
+        https://www.piwheels.org/simple/kiwisolver/kiwisolver-1.1.0-cp37-cp37m-linux_armv7l.whl#sha256=a2cca06a73500969a33771eae6387e3d0c4163ee83d3078929e75cd893d1c179 \
+        https://www.piwheels.org/simple/matplotlib/matplotlib-3.1.0-cp37-cp37m-linux_armv7l.whl#sha256=0c9119af96963801ff5e35362e5ca645249a1489fabbe1acc36b03ff1abdf500 \
+        https://www.piwheels.org/simple/numpy/numpy-1.17.4-cp37-cp37m-linux_armv7l.whl#sha256=eda8f3c1ef64c797971a61012ec218cebe6c6f33e957b1baafbb34b933037098 \
     ; fi
 
 WORKDIR /app
