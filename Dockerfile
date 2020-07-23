@@ -9,7 +9,7 @@ RUN apt-get update && \
     libfreetype6-dev \
     libc6 \
     gcc
-RUN pip install pipenv
+RUN pip install 'pipenv==2018.11.26'
 
 # Install from wheel on arm processors to avoid building from source
 RUN if [ $(uname -m) = armv7l ]; then \
