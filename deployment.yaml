@@ -13,9 +13,8 @@ spec:
         app: discord-karma
     spec:
       containers:
-      - name: discord-karam
-        # a public image on quay
-        image: quay.io/jjasghar/discord-karma:1.0.0
+      - name: discord-karma
+        image: discord-karma:1.0.0
         env:
         - name: DISCORD_TOKEN
           value: "ADD_TOKEN_HERE"

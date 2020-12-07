@@ -32,7 +32,8 @@ docker push <registry>/discord-karma:1.0.0
 
 ## Run on Kubernetes
 
-1. Open the [deployment.yaml](./deployment.yaml) and add your TOKEN at the specific line, if you built the container like above, change the location.
+1. Open the [deployment.yaml](./deployment.yaml) and add your TOKEN at the specific line and
+change the location of the `image:` to a publicly accessable version built.
 1. Run the following to run it on Kubernetes
 ```bash
 kubectl apply -f deployment.yaml
