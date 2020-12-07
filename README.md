@@ -20,3 +20,21 @@ pipenv run python -m karma.bot -t <discord-bot-token>
 ```bash
 pipenv run pytest
 ```
+
+## Build the docker container
+
+1. You can build the docker container and push to a registry if you'd like
+1. Run the following:
+```bash
+docker build -t <registry>/discord-karma:1.0.0
+docker push <registry>/discord-karma:1.0.0
+```
+
+## Run on Kubernetes
+
+1. Open the [deployment.yaml](./deployment.yaml) and add your TOKEN at the specific line and
+change the location of the `image:` to a publicly accessable version built.
+1. Run the following to run it on Kubernetes
+```bash
+kubectl apply -f deployment.yaml
+```

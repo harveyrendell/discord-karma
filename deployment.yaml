@@ -1,0 +1,22 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: discord-karma
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: discord-karma
+  template:
+    metadata:
+      labels:
+        app: discord-karma
+    spec:
+      containers:
+      - name: discord-karma
+        image: discord-karma:1.0.0
+        env:
+        - name: DISCORD_TOKEN
+          value: "ADD_TOKEN_HERE"
+        - name: KARMA_DB_PATH
+          value: "./"
