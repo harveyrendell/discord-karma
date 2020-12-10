@@ -9,6 +9,11 @@ pip install pipenv  # if you don't have it already
 pipenv install
 ```
 
+## Bot Setup
+This bot uses the privileged server member intent to attach usernames to ids.
+This can be set up in the Discord Developer Portal from Applications > Bot > Privileged Gateway Intents > Server Members Intent
+![intent setting image](https://i.imgur.com/Rqk29gc.png)
+
 ## Use
 
 ```bash

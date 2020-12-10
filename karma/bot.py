@@ -11,10 +11,13 @@ import karma.database as db
 from karma import logger as logger
 import karma
 
+intents = discord.Intents.default()
+intents.members = True
 
 bot = commands.Bot(
     description='',
     command_prefix=commands.when_mentioned,
+    intents=intents
 )
 
 extensions = [
