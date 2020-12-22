@@ -1,3 +1,13 @@
+[[source]]
+url = "https://pypi.org/simple"
+verify_ssl = true
+name = "pypi"
+
+[[source]]
+url = "https://www.piwheels.org/simple"
+verify_ssl = true
+name = "piwheels"
+
 [dev-packages]
 mock = "*"
 pylint = "*"
@@ -8,5 +18,4 @@ python-dateutil = "*"
 discord-py = "==1.5.1"
 sqlalchemy = "*"
 tzlocal = "*"
-# Don't install matplotlib through pypi on arm
-matplotlib = {version = "*",platform_machine = "!= 'armv7l'"}
+matplotlib = "*"
