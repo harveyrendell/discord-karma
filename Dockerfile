@@ -1,4 +1,6 @@
-FROM python:3.7-slim
+FROM python:3.7-slim as base
+
+FROM base as builder
 
 MAINTAINER hjrendell@gmail.com
 
@@ -13,16 +15,18 @@ RUN pip install pipenv
 
 WORKDIR /app
 
-# Copy Pipfile separately to avoid running install every build
 COPY Pipfile Pipfile.lock /app/
+RUN pipenv lock -r > requirements.txt && \
+    pip install --target /app/dist/ -r requirements.txt
 
-# Install from new index which serves wheels for ARM
-RUN if [ $(uname -m) = armv7l ]; then \
-        pipenv lock \
-    ; fi
+# Build fresh with no build tools/artifacts
+FROM base
 
-RUN pipenv install --system --deploy
+ENV PYTHONPATH=/app/dist:$PYTHONPATH
 
+COPY --from=builder /app/dist /app/dist
 COPY . /app
+
+WORKDIR /app
 
 CMD python -m karma.bot -t $DISCORD_TOKEN -d $KARMA_DB_PATH
