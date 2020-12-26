@@ -7,7 +7,11 @@ RUN apt-get update && \
     apt-get install -y \
     libatlas-base-dev \
     libfreetype6-dev \
+    libopenjp2-7 \
+    libtiff5 \
+    libgl1-mesa-glx \
     libc6 \
+    gcc \
     && rm -rf /var/lib/apt/lists/*
 RUN pip install pipenv
 
