@@ -1,19 +1,6 @@
 FROM python:3.7-slim as base
 
-FROM base as builder
-
 MAINTAINER hjrendell@gmail.com
-
-RUN pip install pipenv
-
-WORKDIR /app
-
-COPY Pipfile Pipfile.lock /app/
-RUN pipenv lock -r > requirements.txt && \
-    pip install --target /app/dist/ -r requirements.txt
-
-# Build fresh with no build tools/artifacts
-FROM base
 
 RUN echo "deb http://ftp.debian.org/debian sid main" >> /etc/apt/sources.list
 RUN apt-get update && \
@@ -22,10 +9,16 @@ RUN apt-get update && \
     libfreetype6-dev \
     libc6 \
     && rm -rf /var/lib/apt/lists/*
+RUN pip install pipenv
+
+WORKDIR /app
+
+COPY Pipfile Pipfile.lock /app/
+RUN pipenv lock -r > requirements.txt && \
+    pip install --target /app/dist/ -r requirements.txt
 
 ENV PYTHONPATH=/app/dist:$PYTHONPATH
 
-COPY --from=builder /app/dist /app/dist
 COPY . /app
 
 WORKDIR /app
