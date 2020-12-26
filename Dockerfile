@@ -4,13 +4,6 @@ FROM base as builder
 
 MAINTAINER hjrendell@gmail.com
 
-RUN echo "deb http://ftp.debian.org/debian sid main" >> /etc/apt/sources.list
-RUN apt-get update && \
-    apt-get install -y \
-    libatlas-base-dev \
-    libfreetype6-dev \
-    libc6 \
-    gcc
 RUN pip install pipenv
 
 WORKDIR /app
@@ -21,6 +14,14 @@ RUN pipenv lock -r > requirements.txt && \
 
 # Build fresh with no build tools/artifacts
 FROM base
+
+RUN echo "deb http://ftp.debian.org/debian sid main" >> /etc/apt/sources.list
+RUN apt-get update && \
+    apt-get install -y \
+    libatlas-base-dev \
+    libfreetype6-dev \
+    libc6 \
+    && rm -rf /var/lib/apt/lists/*
 
 ENV PYTHONPATH=/app/dist:$PYTHONPATH
 
