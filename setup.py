@@ -7,7 +7,7 @@ setup(
     description='Karma Bot for Discord',
     author='Harvey Rendell',
     author_email='hjrendell@gmail.com',
-    url='https://github.com/Puhapig/discord-karma',
+    url='https://github.com/harveyrendell/discord-karma',
     packages=[
         'karma',
         'karma.cogs',
